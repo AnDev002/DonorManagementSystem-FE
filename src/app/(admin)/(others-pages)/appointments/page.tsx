@@ -1,178 +1,231 @@
 // src/app/(admin)/(others-pages)/appointments/page.tsx
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-// BƯỚC 1: Import component AppointmentDetailRow (vẫn cần dùng)
-import {
-  AppointmentDetailRow,
-} from "@/components/appointment/AppointmentComponents";
+// Services & Types
+import { AppointmentService, AppointmentHistoryItem } from "@/services/AppointmentService";
 
-// BƯỚC 2: Import StatusTracker (component MỚI) và kiểu dữ liệu của nó
-import StatusTracker, {
-  type StatusStep,
-} from '@/components/appointment/StatusTracker';
-
-// BƯỚC 3: Import data cho phần chi tiết (vẫn cần dùng)
-import {
-  appointmentDetails,
-} from "./[id]/data";
-
-// (Không cần import statusSteps, statusLabels, StatusStepIcon, StatusStepLabel nữa)
+// Components UI
+import AppointmentHeader from "@/components/appointment/AppointmentHeader";
+import StatusTracker, { type StatusStep } from '@/components/appointment/StatusTracker';
 import Button from "@/components/ui/button/Button";
+import { CalendarIcon, PlusIcon, HomeIcon, ChatIcon as PhoneIcon, CheckCircleIcon as HelpCircleIcon } from "@/icons";
+import clsx from "clsx";
 
-// BƯỚC 4: Định nghĩa dữ liệu cho component StatusTracker
-// Dữ liệu này được lấy từ file `[id]/page.tsx` để đảm bảo giao diện giống hệt
-const statusStepsData: StatusStep[] = [
-  { text: 'Registered', minWidth: '102px', isDimmed: true, isLightFont: true },
-  {
-    text: 'Waiting for approval',
-    minWidth: '192px',
-    isDimmed: false,
-    isLightFont: false,
-    marginLeft: '187px'
-  },
-  {
-    text: 'Approved',
-    minWidth: '92px',
-    isDimmed: true,
-    isLightFont: true,
-    marginLeft: '235px',
-  },
+// --- Dữ liệu tĩnh cho Avatar Icon ---
+const avatarIconData = [
+  { width: '9px', height: '12.6px', top: '9px', zIndex: '10' },
 ];
 
-// Đổi tên component chính thành tên có ý nghĩa
-const AppointmentDetailPage = () => {
-  const router = useRouter(); // Hook này cần "use client"
+export default function AppointmentDetailPage() {
+  const router = useRouter();
+  const [appointment, setAppointment] = useState<AppointmentHistoryItem | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Hàm xử lý điều hướng
-  const handleUpdateClick = () => {
-    // Bạn cần thay '123' bằng ID thực tế của lịch hẹn này
-    // Ví dụ: router.push(`/appointments/${appointment.id}`);
-    router.push("/appointments/123"); 
+  // 1. Fetch dữ liệu
+  const fetchActiveAppointment = async () => {
+    setLoading(true);
+    try {
+      const history = await AppointmentService.getMyHistory();
+      const activeApt = history
+        .filter(apt => apt.status === 'Pending' || apt.status === 'Confirmed')
+        .sort((a, b) => new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime())[0];
+      setAppointment(activeApt || null);
+    } catch (error) {
+      console.error("Failed to load appointment", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="flex flex-col items-center w-full h-auto max-w-6xl mx-auto p-4 md:p-6 2xl:p-10">
-      
-      {/* Header (Giữ nguyên) */}
-      <div className="flex flex-col md:flex-row justify-between items-start w-full mb-6 gap-4">
-        {/* Title */}
-        <div className="flex items-center gap-2">
-          <Image
-            width={35}
-            height={35}
-            src="/assets/SvgAsset1.1.svg"
-            alt="Svg Asset 18"
-          />
-          <h1 className="font-inter text-2xl md:text-3xl font-bold text-red-600 whitespace-nowrap">
-            Registered schedule
-          </h1>
-        </div>
+  useEffect(() => {
+    fetchActiveAppointment();
+  }, []);
+
+  // 2. Xử lý Hủy lịch
+  const handleCancel = async () => {
+    if (!appointment) return;
+    const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy lịch hẹn này?");
+    if (confirmCancel) {
+      try {
+        await AppointmentService.cancelAppointment(appointment.id);
+        alert("Đã hủy lịch hẹn thành công.");
+        fetchActiveAppointment();
+      } catch (error) {
+        alert("Lỗi khi hủy lịch. Vui lòng thử lại.");
+      }
+    }
+  };
+
+  // 3. Logic Status Steps
+  const getStatusSteps = (status: string): StatusStep[] => {
+    const isConfirmed = status === 'Confirmed';
+    return [
+      { text: 'Registered', minWidth: '102px', isDimmed: false, isLightFont: false },
+      { text: 'Waiting for approval', minWidth: '192px', isDimmed: false, isLightFont: false, marginLeft: '187px' },
+      { text: 'Approved', minWidth: '92px', isDimmed: !isConfirmed, isLightFont: !isConfirmed, marginLeft: '235px' },
+    ];
+  };
+
+  // --- RENDER: Loading ---
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] w-full items-center justify-center bg-gray-50">
+        <p className="text-gray-500 text-lg animate-pulse">Đang tải thông tin lịch hẹn...</p>
       </div>
+    );
+  }
 
-      {/* BƯỚC 5: THAY THẾ code stepper cũ bằng component StatusTracker */}
-      {/* Căn giữa component và set w-full để nó tự co giãn đúng */}
-      <div className="flex justify-center w-full mt-6">
-        <StatusTracker statusStepsData={statusStepsData} />
-      </div>
-
-      {/* Appointment Details Card (Giữ nguyên) */}
-      <div className="bg-red-600/10 dark:bg-red-900/20 mt-8 md:mt-12 flex flex-col w-full h-auto p-6 md:p-12 rounded-lg shadow-lg">
-        <AppointmentDetailRow 
-          text={appointmentDetails[0].text} 
-          isBold={appointmentDetails[0].isBold} 
-        />
-        
-        <div className="space-y-4 mt-6 md:mt-8">
-          {appointmentDetails.slice(1).map((detail, index) => (
-            <AppointmentDetailRow 
-              key={index}
-              text={detail.text} 
-              isBold={detail.isBold}
-            />
-          ))}
+  // --- RENDER: Không có lịch hẹn (Empty State) ---
+  if (!appointment) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] w-full p-6 bg-gray-50">
+        <div className="bg-white p-8 rounded-full mb-6 shadow-sm border border-gray-100">
+          <CalendarIcon className="w-16 h-16 text-red-500" />
         </div>
-
-        {/* Action Buttons - (Giữ nguyên) */}
-        <div className="mt-8 md:mt-12 flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 w-full">
-          <Button
-            size="md"
-            className="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white text-lg md:text-xl font-medium px-8 py-3"
-            onClick={handleUpdateClick} // Thêm sự kiện onClick ở đây
-          >
-            Update appointment
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Bạn chưa có lịch hẹn nào</h2>
+        <p className="text-gray-500 mb-8 text-center max-w-md">
+          Hãy đăng ký hiến máu ngay hôm nay để góp phần cứu sống người bệnh.
+        </p>
+        <Link href="/donation">
+          <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg rounded-xl shadow-lg flex items-center gap-2 transition-transform hover:scale-105">
+            <PlusIcon className="w-5 h-5" />
+            Đăng ký ngay
           </Button>
-          <Button
-            size="md"
-            variant="outline"
-            className="w-full md:w-auto bg-white dark:bg-gray-800 text-lg md:text-xl font-medium px-8 py-3"
-          >
-            Cancel appointment
-          </Button>
-        </div>
+        </Link>
       </div>
+    );
+  }
 
-      {/* Support Card - (Giữ nguyên) */}
-      <div className="bg-red-600/10 dark:bg-red-900/20 rounded-lg w-full h-auto mt-8 md:mt-12 p-6 shadow-lg">
-        {/* Contact Staff */}
-        <div className="flex justify-between items-center w-full cursor-pointer group">
-          <div className="flex flex-col gap-2">
-            <h4 className="font-inter text-xl md:text-2xl font-bold text-black dark:text-white">
-              Do you need support?
-            </h4>
-            <div className="flex items-center gap-2">
-              <div className="flex justify-center items-center w-5 h-5">
-                <Image
-                  width={17.5}
-                  height={17.5}
-                  src="/assets/SvgAsset22.svg"
-                  alt="Svg Asset 22"
-                />
-              </div>
-              <span className="font-inter text-base md:text-xl text-black dark:text-gray-200 font-normal">
-                Contact staff
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-col justify-center items-center h-6 transition-transform group-hover:translate-x-1">
-            <Image
-              width={7.4}
-              height={12.7}
-              src="/assets/SvgAsset21.svg"
-              alt="Chevron Right"
-            />
-          </div>
-        </div>
+  // --- RENDER: Có lịch hẹn (Main UI) ---
+  const formattedDate = new Date(appointment.appointmentDate).toLocaleDateString("vi-VN", {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+  const timeString = appointment.status === 'Confirmed'
+    ? new Date(appointment.appointmentDate).toLocaleTimeString("vi-VN", {hour: '2-digit', minute:'2-digit'})
+    : "Đang chờ sắp xếp";
 
-        <div className="w-full border-t border-gray-300/50 my-4"></div>
-
-        {/* Support Center */}
-        <div className="flex justify-between items-center w-full cursor-pointer group">
-          <div className="flex items-center gap-2">
-            <Image
-              width={20}
-              height={20}
-              src="/assets/SvgAsset20.svg"
-              alt="Support Icon"
-            />
-            <span className="ml-2 font-inter text-base md:text-xl text-black dark:text-gray-200 font-normal">
-              Support center
-            </span>
-          </div>
-          <div className="flex flex-col justify-center items-center h-6 transition-transform group-hover:translate-x-1">
-            <Image
-              width={7.4}
-              height={12.7}
-              src="/assets/SvgAsset19.svg"
-              alt="Chevron Right"
-            />
-          </div>
-        </div>
-      </div>
+  // Helper render dòng chi tiết
+  const DetailItem = ({ label, value, highlight = false }: { label: string, value: string | number, highlight?: boolean }) => (
+    <div className="flex flex-col gap-1">
+      <span className="text-sm font-medium text-red-200/80 uppercase tracking-wide">{label}</span>
+      <span className={clsx(
+        "text-white break-words",
+        highlight ? "text-2xl font-bold text-yellow-300" : "text-lg font-semibold"
+      )}>
+        {value}
+      </span>
     </div>
   );
-};
 
-export default AppointmentDetailPage;
+  return (
+    // Nền trang màu trắng xám (Gray-50)
+    <div className="flex flex-col items-center w-full min-h-screen bg-gray-50 p-4 md:p-6 pb-20">
+      
+      {/* 1. Header Section */}
+      <div className="w-full max-w-6xl mx-auto pt-4">
+        <AppointmentHeader
+          title="Theo dõi lịch hẹn"
+          avatarIconData={avatarIconData}
+        />
+      </div>
+
+      {/* 2. Status Tracker */}
+      <div className="flex justify-center w-full mt-6 mb-8 overflow-x-auto px-4">
+        <StatusTracker statusStepsData={getStatusSteps(appointment.status)} />
+      </div>
+
+      {/* 3. Appointment Details Card (NỀN ĐỎ) */}
+      <div className="w-full max-w-5xl mx-auto">
+        <div className="bg-gradient-to-br from-[#B41919] to-[#8E1212] rounded-[24px] shadow-2xl p-8 md:p-12 relative overflow-hidden">
+            {/* Background Decoration */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+
+            {/* Title */}
+            <div className="mb-8 border-b border-white/20 pb-4 relative z-10">
+               <h3 className="text-2xl font-bold text-white uppercase flex items-center gap-3">
+                  <span className="w-1.5 h-8 bg-white rounded-full"></span>
+                  Thông tin chi tiết
+               </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-16 relative z-10">
+                {/* Cột 1 */}
+                <div className="flex flex-col gap-8">
+                    <DetailItem label="Họ và tên" value={appointment.name} highlight />
+                    <DetailItem label="Số điện thoại" value={appointment.phone} />
+                    
+                    {/* Nhóm máu nổi bật */}
+                    <div className="p-4 bg-black/20 rounded-xl border border-white/10">
+                        <span className="text-xs font-bold text-red-200 uppercase block mb-1">Nhóm máu đăng ký</span>
+                        <span className="text-3xl font-black text-white">{appointment.bloodType}</span>
+                    </div>
+                </div>
+
+                {/* Cột 2 */}
+                <div className="flex flex-col gap-8">
+                    <DetailItem label="Địa điểm hiến máu" value={appointment.location} />
+                    <DetailItem label="Ngày hẹn" value={formattedDate} />
+                    <DetailItem label="Giờ hẹn cụ thể" value={timeString} highlight={appointment.status === 'Confirmed'} />
+                </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-12 pt-8 border-t border-white/20 flex flex-col md:flex-row items-center justify-center gap-6 relative z-10">
+              
+              {/* Nút Hủy (Outline trắng) */}
+              {appointment.status === 'Pending' && (
+                <button
+                    onClick={handleCancel}
+                    className="w-full md:w-auto px-8 py-3.5 rounded-xl border-2 border-white/30 text-white font-bold text-lg hover:bg-white/10 transition-colors"
+                >
+                    Hủy đăng ký
+                </button>
+              )}
+
+              {/* Nút Về trang chủ (Đỏ đậm hơn nền) */}
+              <button
+                onClick={() => router.push('/')}
+                className="w-full md:w-auto px-10 py-3.5 rounded-xl bg-[#580b0b] text-white font-bold text-lg shadow-lg hover:bg-[#420808] transition-transform hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <HomeIcon className="w-5 h-5" />
+                Về trang chủ
+              </button>
+            </div>
+        </div>
+      </div>
+
+      {/* 4. Support Card (NỀN ĐỎ) */}
+      <div className="w-full max-w-5xl mx-auto mt-8">
+        <div className="bg-[#B41919] rounded-2xl p-6 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-full">
+                    {/* Giả lập icon trắng bằng filter nếu là ảnh, hoặc dùng component icon có class text-white */}
+                    <div className="w-6 h-6 text-white"><PhoneIcon /></div> 
+                </div>
+                <div>
+                    <p className="text-red-200 text-sm font-medium">Hotline hỗ trợ y tế</p>
+                    <p className="text-xl font-bold text-white">(+84) 1900 1234</p>
+                </div>
+            </div>
+
+            <div className="h-px w-full md:w-px md:h-12 bg-white/20"></div>
+
+            <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-full">
+                    <div className="w-6 h-6 text-white"><HelpCircleIcon /></div>
+                </div>
+                <div>
+                    <p className="text-red-200 text-sm font-medium">Cần giải đáp thắc mắc?</p>
+                    <p className="text-xl font-bold text-white cursor-pointer hover:underline">Trung tâm trợ giúp</p>
+                </div>
+            </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}

@@ -70,14 +70,15 @@ const AppointmentHeader: React.FC<AppointmentHeaderProps> = ({
       {/* Phần tiêu đề và icon back */}
       <div className="flex items-start">
         <div
-          className="flex h-[31.7px] w-[21.7px] flex-col items-end justify-end bg-contain bg-no-repeat p-1"
+          className="flex flex-col items-end justify-end bg-contain bg-no-repeat p-1"
           style={{ backgroundImage: "url('/assets/SvgAsset15.svg')" }}
         >
           <Image
-            width={7}
-            height={12}
-            src="/assets/SvgAsset16.svg"
-            alt="Back"
+            width={60}
+            height={60}
+            src="/assets/SvgAsset1.1.svg"
+            alt="Blood Icon"
+            className="h-9 w-9"
           />
         </div>
         <h1 className="ml-3.5 mt-1 font-inter text-3xl font-bold text-red-600">
@@ -85,42 +86,7 @@ const AppointmentHeader: React.FC<AppointmentHeaderProps> = ({
         </h1>
       </div>
 
-      {/* Phần Avatar Icon phức tạp */}
-      <div className="relative mt-0.5 h-[61px] w-[329px]">
-        <div
-          className="absolute left-[266px] z-20 flex h-[61px] w-[63px] flex-col items-center justify-center bg-contain bg-no-repeat"
-          style={{ backgroundImage: "url('/assets/SvgAsset1.svg')" }}
-        >
-          <div
-            className="flex h-[41.2px] w-[45.7px] -scale-100 flex-col items-center justify-between"
-          >
-            <div className="relative h-[24.1px] w-[45.7px]">
-              {avatarIconData.map((item, index) => (
-                <PositionedImage
-                  key={index}
-                  width={item.width}
-                  height={item.height}
-                  top={item.top}
-                  left={item.left}
-                  zIndex={item.zIndex}
-                  hasBackground={item.hasBackground}
-                  hasPadding={item.hasPadding}
-                  src="/assets/SvgAsset7.svg"
-                  alt="Svg Asset 7"
-                />
-              ))}
-            </div>
-            {/* ... (Các phần còn lại của icon avatar) ... */}
-          </div>
-        </div>
-        <div
-          className="absolute top-10 z-10 h-0.5 w-[300px]"
-          style={{
-            background:
-              'linear-gradient(270deg,rgba(195,19,19,1) 50%,rgba(209,147,147,0.36) 80%,rgba(215,198,198,0.09) 141%,rgba(217,217,217,0) 151%)',
-          }}
-        ></div>
-      </div>
+     
     </div>
   );
 };
