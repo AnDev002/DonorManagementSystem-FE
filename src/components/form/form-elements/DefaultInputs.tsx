@@ -4,7 +4,7 @@ import ComponentCard from '../../common/ComponentCard';
 import Label from '../Label';
 import Input from '../input/InputField';
 import Select from '../Select';
-// SỬA: Đổi TimeIcon thành ClockIcon (vì trong file icons/index.tsx bạn export là ClockIcon)
+// SỬA: Thay TimeIcon bằng ClockIcon (vì file icons/index.tsx chỉ export ClockIcon)
 import { ChevronDownIcon, EyeCloseIcon, EyeIcon, ClockIcon } from '../../../icons'; 
 import DatePicker from '@/components/form/date-picker';
 
@@ -47,7 +47,7 @@ export default function DefaultInputs() {
           <Label>Password Input</Label>
           <div className="relative">
             <Input
-              type="showPassword"
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
             />
             <button
@@ -68,7 +68,6 @@ export default function DefaultInputs() {
             id="date-picker"
             label="Date Picker Input"
             placeholder="Select a date"
-
           />
         </div>
 
@@ -82,13 +81,12 @@ export default function DefaultInputs() {
               onChange={(e) => console.log(e.target.value)}
             />
             <span className="absolute text-gray-500 -translate-y-1/2 pointer-events-none right-3 top-1/2 dark:text-gray-400">
-              {/* SỬA: Dùng ClockIcon ở đây */}
+              {/* SỬA: Dùng ClockIcon thay cho TimeIcon */}
               <ClockIcon />
             </span>
           </div>
         </div>
-        {/* ... (Phần Input with Payment giữ nguyên) ... */}
-         <div>
+        <div>
           <Label htmlFor="tm">Input with Payment</Label>
           <div className="relative">
             <Input
