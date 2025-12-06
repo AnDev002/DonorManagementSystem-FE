@@ -1,4 +1,4 @@
-// Frontend/app/(admin)/(others-pages)/donation/page.tsx
+// src/app/(admin)/(others-pages)/donation/page.tsx
 "use client"; 
 
 import React, { useState } from "react";
@@ -9,20 +9,20 @@ import AppointmentForm from "@/components/donation/AppointmentForm";
 import DonationFormActions from "@/components/donation/DonationFormActions";
 import { CombinedAppointmentForm } from "@/types/appointment"; 
 import { AppointmentService } from "@/services/AppointmentService"; 
+import { useAuth } from "@/context/AuthContext"; 
 
 export default function CreateDonationPage() {
   const router = useRouter();
+  const { user } = useAuth();
   
   const [formData, setFormData] = useState<CombinedAppointmentForm>({
-    // Donor Info
-    name: "",
-    email: "",
+    name: user?.name || "",
+    email: user?.username || "", 
     phone: "",
     dob: "",
     bloodType: "A+",
-    // Appointment Info
-    appointmentDate: "",
-    location: "Location A",
+    appointmentDate: "", // Format từ DatePicker thường là YYYY-MM-DD
+    location: "Bệnh viện Bạch Mai",
     notes: ""
   });
   
@@ -41,38 +41,57 @@ export default function CreateDonationPage() {
 
   const handleSubmit = async () => {
     setError(null);
+    
+    // Validate cơ bản
+    if (!formData.appointmentDate) {
+      setError("Vui lòng chọn ngày hẹn.");
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      await AppointmentService.createAppointment(formData);
+      // 1. Chuẩn hóa dữ liệu trước khi gửi
+      // AppointmentDate cần convert sang ISO String để Backend NestJS (Prisma) hiểu
+      // Gán thời gian mặc định là 8:00 sáng cho ngày hẹn
+      const dateObj = new Date(formData.appointmentDate);
+      dateObj.setHours(8, 0, 0, 0); 
       
-      alert("Đặt lịch hẹn thành công!");
+      const payload = {
+        ...formData,
+        appointmentDate: dateObj.toISOString(), // Gửi ISO string: "2025-04-30T08:00:00.000Z"
+      };
+
+      await AppointmentService.createAppointment(payload);
+      
+      // 2. Thông báo & Chuyển hướng
+      alert("Đăng ký thành công, vui lòng chờ bác sĩ xác nhận.");
       router.push("/history");
 
     } catch (err: any) {
-      setError(err.message || "Đã xảy ra lỗi. Vui lòng thử lại.");
+      console.error(err);
+      setError(err.message || "Đã xảy ra lỗi khi tạo lịch hẹn. Vui lòng thử lại.");
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    // SỬA: Bọc layout giống trang notification/page.tsx
     <div className="flex w-full flex-col items-center justify-start px-4 py-12">
       <div className="flex w-full max-w-6xl flex-col items-center">
         
         <DonationPageHeader />
         
-        {/* SỬA: Bọc nội dung chính trong <main> */}
         <main className="relative w-full">
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-5 xl:gap-7.5">
-            <div className="panel xl:col-span-3 rounded-xl bg-white p-6 shadow-lg md:p-8"> {/* Thêm style thẻ */}
-              <h3 className="mb-5 text-title-sm font-semibold text-gray-800 dark:text-white">
+            <div className="panel xl:col-span-3 rounded-xl bg-white p-6 shadow-lg md:p-8"> 
+              <h3 className="mb-5 text-title-sm font-semibold text-gray-800 dark:text-gray-800">
                 Thông tin người hiến
               </h3>
               <DonorInfoForm data={formData} onUpdate={handleInputChange} />
             </div>
-            <div className="panel xl:col-span-2 rounded-xl bg-white p-6 shadow-lg md:p-8"> {/* Thêm style thẻ */}
-              <h3 className="mb-5 text-title-sm font-semibold text-gray-800 dark:text-white">
+            <div className="panel xl:col-span-2 rounded-xl bg-white p-6 shadow-lg md:p-8"> 
+              <h3 className="mb-5 text-title-sm font-semibold text-gray-800 dark:text-gray-800">
                 Chi tiết Lịch hẹn
               </h3>
               <AppointmentForm data={formData} onUpdate={handleInputChange} />
@@ -80,12 +99,12 @@ export default function CreateDonationPage() {
           </div>
           
           {error && (
-            <div className="mt-4 text-red-500 p-3 bg-red-100 border border-red-300 rounded-lg">
-              {error}
+            <div className="mt-4 text-red-600 font-medium p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+              ⚠️ {error}
             </div>
           )}
 
-          <div className="mt-8 flex justify-center"> {/* Căn giữa các nút */}
+          <div className="mt-8 flex justify-center pb-10"> 
             <DonationFormActions
               isSubmitting={isSubmitting}
               onSubmit={handleSubmit}

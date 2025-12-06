@@ -1,73 +1,84 @@
 // src/components/notification/NotificationItem.tsx
 "use client";
 
-import { NotificationItemData } from "@/lib/data/notificationData";
+import React from "react";
 import clsx from "clsx";
-import Badge from "@/components/ui/badge/Badge"; 
-// BƯỚC 1: Import các icon (đã được định nghĩa trong index.tsx)
+import Badge from "@/components/ui/badge/Badge";
+import { Notification } from "@/services/NotificationService"; // Import kiểu dữ liệu thật
 import { 
-  ClockIcon, // <-- Đã có
+  ClockIcon, 
   CheckCircleIcon, 
   BellIcon, 
   MailIcon, 
-  MoreHorizontalIcon, // <-- Đã có
-  InfoIcon 
+  MoreHorizontalIcon, 
+  InfoIcon,
+  AlertIcon
 } from "@/icons";
 
 interface NotificationItemProps {
-  item: NotificationItemData;
+  item: Notification; // Dùng kiểu dữ liệu từ API
+  onRead?: (id: number) => void;
 }
 
-// BƯỚC 2: Tạo hàm helper để chọn icon bên trái
-const getIconByTitle = (title: string) => {
-  const props = { className: "w-5 h-5 opacity-80" };
-  if (title.includes("Nhắc lịch")) return <ClockIcon {...props} />; // <-- Dùng ClockIcon
-  if (title.includes("Thông báo")) return <CheckCircleIcon {...props} />;
-  if (title.includes("Cập nhật")) return <BellIcon {...props} />;
-  if (title.includes("Thư cảm ơn")) return <MailIcon {...props} />;
-  return <InfoIcon {...props} />;
+// Helper chọn icon dựa trên TYPE (giống Dropdown)
+const getIconByType = (type: string) => {
+  const props = { className: "w-6 h-6" };
+  switch (type) {
+    case 'SUCCESS': return <CheckCircleIcon {...props} className="w-6 h-6 text-green-500" />;
+    case 'WARNING': return <AlertIcon {...props} className="w-6 h-6 text-yellow-500" />;
+    case 'ERROR': return <AlertIcon {...props} className="w-6 h-6 text-red-500" />;
+    default: return <InfoIcon {...props} className="w-6 h-6 text-blue-500" />;
+  }
 };
 
-const NotificationItem = ({ item }: NotificationItemProps) => {
+const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
+  // Format thời gian
+  const timeString = new Date(item.createdAt).toLocaleString('vi-VN', {
+    hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'
+  });
+
   return (
-    <div className="relative flex w-full items-start gap-4 border-b border-gray-100 pb-5 pt-2 dark:border-gray-800">
+    <div 
+      onClick={() => !item.isRead && onRead?.(item.id)}
+      className={clsx(
+        "relative flex w-full items-start gap-4 border-b border-gray-100 pb-5 pt-2 transition-all rounded-lg p-3 cursor-pointer",
+        !item.isRead ? "bg-blue-50/60 hover:bg-blue-50" : "bg-white hover:bg-gray-50"
+      )}
+    >
       
       {/* 1. Icon bên trái */}
-      <div
-        className={clsx(
-          "flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
-        )}
-      >
-        {getIconByTitle(item.title)}
+      <div className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-full bg-white border border-gray-100 shadow-sm">
+        {getIconByType(item.type)}
       </div>
 
-      {/* 2. Nội dung text (Xóa item.titleIcon) */}
+      {/* 2. Nội dung text */}
       <div className="flex flex-1 flex-col gap-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-base font-semibold text-gray-800 dark:text-white/90">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={clsx("text-base font-semibold", !item.isRead ? "text-gray-900" : "text-gray-600")}>
             {item.title}
           </span>
-          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-            {item.timestamp}
+          <span className="text-sm font-normal text-gray-400 flex items-center gap-1">
+            <ClockIcon className="w-3.5 h-3.5" />
+            {timeString}
           </span>
         </div>
-        <p className="text-sm font-normal text-gray-600 dark:text-gray-300">
+        <p className={clsx("text-sm font-normal", !item.isRead ? "text-gray-800" : "text-gray-500")}>
           {item.message}
         </p>
       </div>
 
-      {/* 3. Tag "New" (Giữ nguyên) */}
-      {item.isNew && (
+      {/* 3. Tag "New" */}
+      {!item.isRead && (
         <div className="ml-auto flex-shrink-0 pl-2">
           <Badge variant="solid" color="primary" size="sm">
-            New
+            Mới
           </Badge>
         </div>
       )}
 
-      {/* 4. Icon bên phải */}
-      <button className="ml-2 flex-shrink-0 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-300">
-        <MoreHorizontalIcon className="w-5 h-5" /> {/* <-- Dùng MoreHorizontalIcon */}
+      {/* 4. Icon menu (Optional) */}
+      <button className="ml-2 flex-shrink-0 rounded-full p-1.5 text-gray-400 hover:bg-gray-200">
+        <MoreHorizontalIcon className="w-5 h-5" />
       </button>
     </div>
   );

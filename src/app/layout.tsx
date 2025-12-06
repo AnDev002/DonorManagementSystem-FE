@@ -21,8 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={inter.className}>
-        {/* 2. Bọc toàn bộ ứng dụng bằng ClientProviders */}
+      <body className={inter.className} suppressHydrationWarning={true}>
         <ClientProviders>
           {children}
         </ClientProviders>

@@ -1,75 +1,96 @@
 // src/components/admin/layout/AppSidebar.tsx
-"use client"; // BẮT BUỘC THÊM "use client"
+"use client";
 
-import React from 'react';
-import Image from 'next/image';
-import { SidebarNavItem } from '@/types';
-import SidebarNavLink from './SidebarNavLink'; // Import component con
-import { Book, MessageCircle, Settings, ChevronRight } from 'lucide-react'; // Icons
-import { usePathname } from 'next/navigation'; // BƯỚC 1: Import usePathname
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  CalendarDays,
+  Droplet,
+  Users,
+  BookOpen,
+  MessageSquare,
+  Settings,
+  HeartPulse,
+} from "lucide-react";
+import clsx from "clsx";
 
-// BƯỚC 2: Cập nhật đường dẫn (href)
-const mainNavItems: SidebarNavItem[] = [
-  { href: "/adminDashboard", label: "Dashboard", iconSrc: "/assets/SvgAsset10.svg", iconAlt: "Dashboard" },
-  { href: "/appointment", label: "Appointment", iconSrc: "/assets/SvgAsset4.svg", iconAlt: "Appointment" },
-  { href: "/blood-inventory", label: "Blood inventory", iconSrc: "/assets/SvgAsset3.svg", iconAlt: "Blood inventory" },
-  { href: "/admin-user-management", label: "User management", iconSrc: "/assets/SvgAsset2.svg", iconAlt: "User management" }, // Sửa href
-  { href: "/reporting", label: "Reporting and Analysis", iconSrc: "/assets/SvgAsset11.svg", iconAlt: "Reporting" },
-];
+// Định nghĩa kiểu cho Item
+interface NavItemProps {
+  icon: React.ElementType;
+  label: string;
+  href: string;
+  isNew?: boolean;
+}
 
-const AppSidebar = () => {
-  // BƯỚC 3: Lấy đường dẫn hiện tại
+// Component con hiển thị từng mục menu
+const SidebarItem: React.FC<NavItemProps> = ({ icon: Icon, label, href, isNew }) => {
   const pathname = usePathname();
+  // Logic kiểm tra Active
+  const isActive = pathname === href || (href !== '/adminDashboard' && pathname.startsWith(href));
 
   return (
-    // w-[345px] ~ 345px. Dùng h-full và overflow-y-auto để cuộn nếu nội dung dài
-    <aside className="w-[345px] bg-white h-full p-6 flex flex-col gap-10 overflow-y-auto shadow-lg fixed top-0 left-0"> {/* Thêm fixed top-0 left-0 */}
-      {/* Logo B-DONOR */}
-      <div className="flex items-center gap-3 px-4">
-        <Image src="/assets/SvgAsset1.svg" alt="Logo" width={74} height={63} />
-        <span className="font-baloo text-4xl font-normal text-red-700">
+    <Link
+      href={href}
+      className={clsx(
+        "group flex items-center gap-4 rounded-xl px-4 py-3.5 text-base font-medium transition-all duration-200 ease-in-out",
+        isActive
+          ? "bg-[#CF2222] text-white shadow-md" 
+          : "text-gray-600 hover:bg-red-50 hover:text-[#CF2222]"
+      )}
+    >
+      <Icon
+        className={clsx(
+          "h-6 w-6",
+          isActive ? "text-white" : "text-gray-400 group-hover:text-[#CF2222]"
+        )}
+      />
+      <span className="flex-1">{label}</span>
+      {isNew && (
+        <span className="rounded-full bg-[#FD5353] px-2.5 py-0.5 text-xs font-medium text-white">
+          New!
+        </span>
+      )}
+    </Link>
+  );
+};
+
+const AppSidebar = () => {
+  // ĐÃ XÓA: "Reporting and Analysis"
+  const navItems = [
+    { icon: LayoutDashboard, label: "Dashboard", href: "/adminDashboard" },
+    { icon: CalendarDays, label: "Appointment", href: "/admin-appointment" },
+    { icon: Droplet, label: "Blood inventory", href: "/admin-blood-inventory" },
+    { icon: Users, label: "User management", href: "/admin-user-management" },
+  ];
+
+  // (Phần Other items giữ nguyên nếu bạn muốn dùng sau này)
+  const otherItems = [
+    { icon: BookOpen, label: "Guide", href: "#" },
+    { icon: MessageSquare, label: "Messages", href: "#", isNew: true },
+    { icon: Settings, label: "Settings", href: "#" },
+  ];
+
+  return (
+    <aside className="fixed left-0 top-0 z-50 hidden h-full w-[290px] flex-col bg-white shadow-xl lg:flex">
+      {/* Logo */}
+      <div className="flex h-[100px] items-center gap-3 px-8 pt-6">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-700">
+          <HeartPulse size={32} strokeWidth={2.5} />
+        </div>
+        <span className="font-baloo text-3xl font-bold text-[#B41919]">
           B-DONOR
         </span>
       </div>
 
-      {/* Khối điều hướng chính */}
-      <nav className="flex flex-col gap-2">
-        {mainNavItems.map((item) => (
-          <SidebarNavLink
-            key={item.href}
-            href={item.href}
-            label={item.label}
-            iconSrc={item.iconSrc}
-            iconAlt={item.iconAlt}
-            // BƯỚC 4: Logic active động
-            isActive={pathname === item.href} 
-          />
-        ))}
-      </nav>
-
-      {/* Khối "Others" */}
-      <div className="flex flex-col gap-4 pl-8">
-        <h3 className="text-lg font-medium text-gray-800">Others</h3>
-        <a href="#" className="flex items-center justify-between text-gray-700 hover:text-red-600">
-          <div className="flex items-center gap-4">
-            <Book size={20} />
-            <span>Guide</span>
-          </div>
-          <ChevronRight size={16} />
-        </a>
-        <a href="#" className="flex items-center justify-between text-gray-700 hover:text-red-600">
-          <div className="flex items-center gap-4">
-            <MessageCircle size={20} />
-            <span>Messages</span>
-            <span className="ml-2 px-3 py-0.5 bg-red-500 text-white text-xs rounded-full">New!</span>
-          </div>
-        </a>
-        <a href="#" className="flex items-center justify-between text-gray-700 hover:text-red-600">
-          <div className="flex items-center gap-4">
-            <Settings size={20} />
-            <span>Settings</span>
-          </div>
-        </a>
+      {/* Main Menu */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+        <nav className="flex flex-col gap-4">
+          {navItems.map((item) => (
+            <SidebarItem key={item.label} {...item} />
+          ))}
+        </nav>
       </div>
     </aside>
   );

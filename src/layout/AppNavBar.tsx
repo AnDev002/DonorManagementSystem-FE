@@ -1,7 +1,8 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext"; // Import useAuth để lấy thông tin user
 // BƯỚC 1: Import các icon từ file index.tsx
 import {
   HomeIcon, // Thay cho GridIcon
@@ -10,15 +11,6 @@ import {
   HistoryIcon, // Thay cho TimeIcon
   CalendarIcon, // Thay cho CalenderIcon
 } from "@/icons";
-
-// BƯỚC 2: Cập nhật mảng navItems
-const navItems = [
-  { name: "Home", path: "/", icon: HomeIcon },
-  { name: "Register appointment", path: "/donation", icon: ClipboardCheckIcon },
-  { name: "Notification", path: "/notification", icon: BellIcon },
-  { name: "History", path: "/history", icon: HistoryIcon },
-  { name: "Appointment", path: "/appointments", icon: CalendarIcon },
-];
 
 // Component NavLink con
 const NavLink = ({
@@ -40,6 +32,31 @@ const NavLink = ({
 
 const AppNavBar: React.FC = () => {
   const pathname = usePathname();
+  const { user } = useAuth(); // Lấy thông tin user hiện tại
+
+  // BƯỚC 2: Cập nhật mảng navItems sử dụng useMemo để phản ứng với thay đổi của user
+  const navItems = useMemo(() => {
+    // Kiểm tra xem user có phải là Doctor không
+    const isDoctor = user?.role === 'Doctor';
+
+    return [
+      { name: "Home", path: "/", icon: HomeIcon },
+      { name: isDoctor ? "Register confirmation" : "Register appointment", path: isDoctor ? "register-confirmation" : "/donation", icon: ClipboardCheckIcon },
+      { name: isDoctor ? "Health Check" : "Notification", path: isDoctor ? "/health-check" : "/notification", icon: BellIcon },
+      { 
+        // Thay đổi tên hiển thị dựa trên role
+        name: isDoctor ? "Record donation" : "History", 
+        path: isDoctor ? "/record-donation" : "/history", 
+        icon: HistoryIcon 
+      },
+      { 
+        // Thay đổi tên hiển thị dựa trên role
+        name: isDoctor ? "Work schedule" : "Appointment", 
+        path: isDoctor ? "/work-schedule" : "/appointments", 
+        icon: CalendarIcon 
+      },
+    ];
+  }, [user]);
 
   return (
     <nav className="flex w-full shadow-md">

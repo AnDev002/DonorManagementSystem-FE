@@ -1,26 +1,20 @@
-/**
- * Kiểu dữ liệu cho một hàng trong lịch sử hiến máu
- */
+// src/types/history.ts
+
 export interface History {
   id: number | string;
   donorName: string;
   date: string;
-  status: "Completed" | "Pending" | "Cancelled";
+  // Cập nhật Type Status để khớp với Backend và yêu cầu hiển thị
+  status: "Pending" | "Confirmed" | "Completed" | "Cancelled" | "Rejected" | "ReadyToDonate"; 
 }
 
-/**
- * Kiểu dữ liệu cho một hàng chi tiết (Key-Value)
- */
 export interface DonationDetail {
   label: string;
   value: string;
   isLabelBold?: boolean;
-  isLabelInset?: boolean; // Tương ứng với marginLeft
+  isLabelInset?: boolean;
 }
 
-/**
- * Kiểu dữ liệu cho một bước trong hành trình
- */
 export interface JourneyStep {
   iconSrc: string;
   iconAlt: string;
