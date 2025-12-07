@@ -15,6 +15,12 @@ export default function CreateDonationPage() {
   const router = useRouter();
   const { user } = useAuth();
   
+
+  const isValidPhone = (phone: string) => {
+    const regex = /^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$/;
+    return regex.test(phone);
+  };
+
   const [formData, setFormData] = useState<CombinedAppointmentForm>({
     name: user?.name || "",
     email: user?.username || "", 
@@ -44,8 +50,17 @@ export default function CreateDonationPage() {
     
     // Validate cơ bản
     if (!formData.appointmentDate) {
-      setError("Vui lòng chọn ngày hẹn.");
+      setError("Please select an appointment date.");
       return;
+    }
+
+    if (!formData.phone) {
+        setError("Please enter your phone number.");
+        return;
+    }
+    if (!isValidPhone(formData.phone)) {
+        setError("Invalid phone number format. Please check again.");
+        return;
     }
 
     setIsSubmitting(true);
@@ -64,13 +79,15 @@ export default function CreateDonationPage() {
 
       await AppointmentService.createAppointment(payload);
       
+
+
       // 2. Thông báo & Chuyển hướng
-      alert("Đăng ký thành công, vui lòng chờ bác sĩ xác nhận.");
+      alert("Registration successful! Please wait for doctor confirmation.");
       router.push("/history");
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Đã xảy ra lỗi khi tạo lịch hẹn. Vui lòng thử lại.");
+      setError(err.message || "An error occurred while creating the appointment. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

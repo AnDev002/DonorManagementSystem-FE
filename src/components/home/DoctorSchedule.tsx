@@ -19,13 +19,13 @@ import clsx from "clsx";
 
 const doctorInfo = {
   name: "Dr. Nguyen Van A",
-  role: "Chuyên khoa Huyết học",
+  role: "Hematology Specialist",
   id: "DOC-2025-88",
-  bio: "Trưởng khoa Huyết học - Truyền máu với hơn 15 năm kinh nghiệm. Chuyên gia tư vấn sức khỏe người hiến máu và an toàn truyền máu.",
+  bio: "Head of Hematology - Blood Transfusion with over 15 years of experience. Expert in blood donor health consultation and transfusion safety.",
   contact: {
     phone: "(+84) 912 345 678",
     email: "dr.nguyenvana@hospitals.vn",
-    location: "Phòng 302, Tòa nhà A, Bệnh viện Bạch Mai",
+    location: "Room 302, Building A, Bach Mai Hospital",
   },
 };
 
@@ -118,7 +118,7 @@ const ScheduleCalendar = () => {
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
           <Clock className="text-red-600" /> 
-          Lịch làm việc
+          Work Schedule
         </h3>
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
           <button className="p-1 hover:bg-white rounded-md transition shadow-sm"><ChevronLeft size={18} className="text-gray-600" /></button>
@@ -180,7 +180,7 @@ const ScheduleCalendar = () => {
 
       {/* Upcoming Shifts Section */}
       <div className="mt-auto border-t border-gray-100 pt-4">
-        <h4 className="text-sm font-bold text-gray-700 mb-3">Ca trực sắp tới (Hôm nay)</h4>
+        <h4 className="text-sm font-bold text-gray-700 mb-3">Upcoming Shifts (Today)</h4>
         <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
           {["08:00 - 12:00", "13:30 - 17:00"].map((shift, idx) => (
             <div key={idx} className="flex-shrink-0 flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm font-medium border border-red-100">
@@ -203,9 +203,9 @@ const DoctorSchedule = () => {
       {/* Title Section */}
       <div className="mb-8 text-center md:text-left">
         <h2 className="text-3xl font-bold text-gray-900">
-          Thông tin & Lịch làm việc
+          Information & Schedule
         </h2>
-        <p className="text-gray-500 mt-2">Xem thông tin chi tiết và lịch trực của bác sĩ để đặt hẹn phù hợp.</p>
+        <p className="text-gray-500 mt-2">View detailed information and shift schedule to book an appointment.</p>
       </div>
 
       {/* Content Grid */}

@@ -15,6 +15,11 @@ export default function CustomerForm({ id }: CustomerFormProps) {
     phone: '',
     address: '',
   });
+
+  const validatePhone = (phone: string) => {
+     return /^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$/.test(phone);
+  };
+
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -44,6 +49,12 @@ export default function CustomerForm({ id }: CustomerFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validatePhone(form.phone)) {
+        alert("Số điện thoại không đúng định dạng!");
+        return;
+    }
+
     setLoading(true);
     try {
       if (id) {
@@ -55,6 +66,7 @@ export default function CustomerForm({ id }: CustomerFormProps) {
     } catch (err) {
       console.error(err);
     } finally {
+      
       setLoading(false);
     }
   };

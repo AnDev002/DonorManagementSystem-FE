@@ -40,30 +40,29 @@ export default function DonationHistoryPage() {
 
   // Xử lý hủy lịch
   const handleCancel = async (id: number | string) => {
-    const isConfirmed = confirm("Bạn có chắc chắn muốn hủy lịch hẹn này không?");
+    const isConfirmed = confirm("Are you sure you want to cancel this appointment?");
     if (!isConfirmed) return;
 
     try {
       await AppointmentService.cancelAppointment(id);
-      alert("Đã hủy lịch hẹn thành công.");
-      fetchData(); // Load lại dữ liệu để cập nhật trạng thái
+      alert("Appointment cancelled successfully.");
+      fetchData();
     } catch (error) {
-      console.error(error);
-      alert("Lỗi khi hủy lịch. Vui lòng thử lại sau.");
+      alert("Failed to cancel appointment. Please try again.");
     }
   };
 
   return (
     <div className="w-full">
       <div className="flex justify-between items-center px-4 md:px-6 2xl:px-10 py-4">
-         <h1 className="text-2xl font-bold text-red-600">Lịch sử của tôi</h1>
+         <h1 className="text-2xl font-bold text-red-600">My History</h1>
          <HistoryHeaderGraphic />
       </div>
 
       <div className="px-4 md:px-6 2xl:px-10">
         <div className="mt-7.5">
           <DonationHistoryTable
-            title="Danh sách phiếu đăng ký"
+            title="Registration List"
             data={historyData}
             isLoading={isLoading}
             onCancelAppointment={handleCancel} // Truyền hàm hủy xuống

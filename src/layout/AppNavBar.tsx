@@ -32,26 +32,30 @@ const NavLink = ({
 
 const AppNavBar: React.FC = () => {
   const pathname = usePathname();
-  const { user } = useAuth(); // Lấy thông tin user hiện tại
+  const { user } = useAuth();
 
-  // BƯỚC 2: Cập nhật mảng navItems sử dụng useMemo để phản ứng với thay đổi của user
   const navItems = useMemo(() => {
-    // Kiểm tra xem user có phải là Doctor không
     const isDoctor = user?.role === 'Doctor';
 
     return [
       { name: "Home", path: "/", icon: HomeIcon },
-      { name: isDoctor ? "Register confirmation" : "Register appointment", path: isDoctor ? "register-confirmation" : "/donation", icon: ClipboardCheckIcon },
-      { name: isDoctor ? "Health Check" : "Notification", path: isDoctor ? "/health-check" : "/notification", icon: BellIcon },
       { 
-        // Thay đổi tên hiển thị dựa trên role
-        name: isDoctor ? "Record donation" : "History", 
+        name: isDoctor ? "Confirmation" : "Register Appointment", 
+        path: isDoctor ? "register-confirmation" : "/donation", 
+        icon: ClipboardCheckIcon 
+      },
+      { 
+        name: isDoctor ? "Health Check" : "Notification", 
+        path: isDoctor ? "/health-check" : "/notification", 
+        icon: BellIcon 
+      },
+      { 
+        name: isDoctor ? "Record Donation" : "History", 
         path: isDoctor ? "/record-donation" : "/history", 
         icon: HistoryIcon 
       },
       { 
-        // Thay đổi tên hiển thị dựa trên role
-        name: isDoctor ? "Work schedule" : "Appointment", 
+        name: isDoctor ? "Work Schedule" : "Appointment", 
         path: isDoctor ? "/work-schedule" : "/appointments", 
         icon: CalendarIcon 
       },

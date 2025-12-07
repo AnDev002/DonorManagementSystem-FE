@@ -22,7 +22,7 @@ const AppointmentForm: React.FC<Props> = ({ data, onUpdate }) => {
   return (
     <form action="#" className="flex flex-col gap-5">
       <div>
-        <Label htmlFor="appointmentDate">Ngày hẹn</Label>
+        <Label htmlFor="appointmentDate">Appointment Date</Label>
         <DatePicker
           id="appointmentDate"
           value={data.appointmentDate}
@@ -31,21 +31,21 @@ const AppointmentForm: React.FC<Props> = ({ data, onUpdate }) => {
         />
       </div>
       <div>
-        <Label htmlFor="appointmentLocation">Địa điểm</Label>
+        <Label htmlFor="appointmentLocation">Location</Label>
         <Select
           id="appointmentLocation" // Prop 'id' giờ đã hợp lệ
           value={data.location}
           // SỬA LỖI: Component Select trả về 'value' (string), không phải 'event'
           onChange={(value: string) => onUpdate("location", value)}
           options={locationOptions}
-          placeholder="Chọn địa điểm"
+          placeholder="Select location"
         />
       </div>
       <div>
-        <Label htmlFor="appointmentNotes">Ghi chú</Label>
+        <Label htmlFor="appointmentNotes">Notes</Label>
         <TextArea
           id="appointmentNotes"
-          placeholder="Ghi chú thêm (nếu có)..."
+          placeholder="Additional notes (optional)..."
           rows={4}
           value={data.notes}
           // SỬA LỖI: Component TextArea trả về 'value' (string), không phải 'event'

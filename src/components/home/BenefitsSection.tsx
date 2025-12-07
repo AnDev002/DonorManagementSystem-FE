@@ -22,12 +22,12 @@ const BenefitsSection = () => {
         <h2
           className="w-full text-3xl font-bold leading-tight text-red-600 md:text-4xl"
         >
-          Quyền lợi của Người Hiến máu
+          Benefits of Blood Donors
         </h2>
         <p
           className="mt-4 w-full text-lg font-normal text-red-600 md:text-xl"
         >
-          Người hiến máu tình nguyện sẽ được những quyền lợi như sau:
+          Voluntary blood donors are entitled to the following benefits:
         </p>
         <Image
           className="mt-6 h-auto w-full max-w-lg"

@@ -15,23 +15,23 @@ import {
 const criteriaData = [
   {
     icon: UserCheckIcon, 
-    text: "Mang theo chứng minh nhân dân/hộ chiếu",
+    text: "Bring your ID card or Passport",
   },
   {
     icon: HeartPulseIcon, 
-    text: "Cân nặng: Nam ≥ 45 kg Nữ ≥ 45 kg",
+    text: "Weight: Male ≥ 45 kg, Female ≥ 45 kg",
   },
   {
     icon: BanIcon, 
-    text: "Không mắc hoặc không có các hành vi nguy cơ lây nhiễm HIV, không nhiễm viêm gan B, viêm gan C, và các virus lây qua đường truyền máu",
+    text: "No history of high-risk behaviors for HIV, no Hepatitis B, Hepatitis C, or other blood-borne viruses",
   },
   {
     icon: WineOffIcon, 
-    text: "Không nghiện ma túy, rượu bia và các chất kích thích",
+    text: "No addiction to drugs, alcohol, or stimulants",
   },
   {
-    icon: FileCheckIcon, // <-- Dùng icon đã import
-    text: "Không mắc các bệnh mãn tính hoặc cấp tính về tim mạch, huyết áp, hô hấp, dạ dày...",
+    icon: FileCheckIcon, 
+    text: "No chronic or acute diseases related to heart, blood pressure, respiratory system, stomach...",
   },
 ];
 
@@ -46,7 +46,7 @@ const CriteriaSection = () => {
               className="h-12 w-12 text-red-700"
             />
             <h2 className="mt-4 text-2xl font-bold text-red-700">
-              Tiêu chuẩn tham gia hiến máu
+              Criteria for Blood Donation
             </h2>
           </div>
 

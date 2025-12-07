@@ -6,33 +6,33 @@ import { ChevronLeftIcon, ArrowRightIcon } from "@/icons"; // Import icons
 // Dữ liệu cho 3 tab carousel
 const benefitsData = [
   {
-    title: "Được tư vấn về sức khoẻ",
+    title: "Health Consultation",
     items: [
-      "Được giải thích về quy trình hiến máu và các tai biến có thể xảy ra trong và sau khi hiến máu.",
-      "Được cung cấp thông tin về dấu hiệu, triệu chứng do nhiễm vi rút viêm gan, HIV và một số bệnh lây qua đường truyền máu, tình dục khác.",
-      "Được xét nghiệm sàng lọc một số vi rút lây qua đường truyền máu, tình dục (HIV, Giang mai, viêm gan,...) sau khi hiến máu.",
-      "Được tư vấn hướng dẫn cách chăm sóc sức khoẻ, tư vấn về kết quả bất thường sau hiến máu.",
-      "Được bảo mật về kết quả khám lâm sàng, kết quả xét nghiệm.",
+      "Explanation of the blood donation process and potential risks during and after donation.",
+      "Information on signs and symptoms of Hepatitis, HIV, and other blood-borne or sexually transmitted diseases.",
+      "Screening tests for blood-borne viruses (HIV, Syphilis, Hepatitis, etc.) after donation.",
+      "Guidance on health care and consultation on any abnormal results after donation.",
+      "Confidentiality regarding clinical examination and test results.",
     ],
   },
   {
-    title: "Được nhận quà tặng và hỗ trợ",
+    title: "Gifts and Support",
     items: [
-      "Được bồi dưỡng, chăm sóc theo các quy định hiện hành.",
-      "Nhận quà tặng lưu niệm (hiện vật hoặc tiền mặt) theo giá trị tương ứng.",
-      "Được hỗ trợ chi phí đi lại (hoặc vé xe) theo quy định.",
-      "Được nhận giấy chứng nhận hiến máu tình nguyện.",
-      "Được ưu tiên truyền máu miễn phí tại các cơ sở y tế công lập trên toàn quốc khi bản thân có nhu cầu.",
+      "Served snacks and drinks according to current regulations.",
+      "Receive souvenir gifts (in-kind or cash) equivalent to the value.",
+      "Travel support (cash or ticket) according to regulations.",
+      "Receive a Voluntary Blood Donation Certificate.",
+      "Priority for free blood transfusion at public health facilities nationwide if needed.",
     ],
   },
   {
-    title: "Được tôn vinh và ghi nhận",
+    title: "Honor and Recognition",
     items: [
-      "Được xem xét, xét tặng các danh hiệu, giải thưởng, kỷ niệm chương về hiến máu nhân đạo.",
-      "Được tôn vinh tại các sự kiện, chương trình vinh danh người hiến máu tiêu biểu.",
-      "Tham gia vào cộng đồng những người hiến máu, lan tỏa tinh thần nhân ái.",
-      "Nhận được sự trân trọng từ gia đình, bạn bè và xã hội.",
-      "Cảm thấy tự hào về hành động cao đẹp cứu người của mình.",
+      "Considered for titles, awards, and medals for humanitarian blood donation.",
+      "Honored at events and programs recognizing outstanding blood donors.",
+      "Join the community of blood donors, spreading the spirit of kindness.",
+      "Receive respect from family, friends, and society.",
+      "Feel proud of the noble act of saving lives.",
     ],
   },
 ];

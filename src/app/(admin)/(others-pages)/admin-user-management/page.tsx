@@ -111,9 +111,9 @@ const UserEditModal: React.FC<UserEditModalProps> = ({
                 onChange={handleChange}
                 className="w-full appearance-none rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
               >
-                <option value={RoleDto.Donor}>Blood Donor (Người hiến máu)</option>
-                <option value={RoleDto.Doctor}>Doctor (Bác sĩ)</option>
-                <option value={RoleDto.Admin}>Administrator (Quản trị viên)</option>
+                <option value={RoleDto.Donor}>Blood Donor</option>
+                <option value={RoleDto.Doctor}>Doctor</option>
+                <option value={RoleDto.Admin}>Administrator</option>
               </select>
             </div>
           </div>
@@ -197,7 +197,7 @@ export default function UserManagementPage() {
       console.error("Failed to fetch users", error);
       // Xử lý lỗi 401 Unauthorized
       if (error.message?.includes("401") || error.message?.includes("Unauthorized")) {
-        alert("Phiên đăng nhập hết hạn hoặc bạn không có quyền Admin. Vui lòng đăng nhập lại.");
+        alert("Session expired or unauthorized. Please login again.");
         router.push("/signin"); // Chuyển về trang login
       }
     } finally {

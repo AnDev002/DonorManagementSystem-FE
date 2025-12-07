@@ -66,13 +66,13 @@ export default function BloodInventoryFormModal({
       }
 
       await InventoryService.create(payload);
-      alert("Nhập kho thành công!");
+      alert("Import successful!");
       onSuccess();
       onClose();
     } catch (error: any) {
       console.error("Create failed", error);
       // Hiển thị thông báo lỗi cụ thể hơn
-      alert(error.response?.data?.message || "Lỗi nhập kho: ID lịch hẹn có thể đã tồn tại hoặc không hợp lệ.");
+      alert(error.response?.data?.message || "Import error: ID exist in system.");
     } finally {
       setLoading(false);
     }

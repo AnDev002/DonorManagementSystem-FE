@@ -27,7 +27,7 @@ export default function SignUpForm() {
     setError(""); // Xóa lỗi cũ
 
     if (!isChecked) {
-      setError("Bạn phải đồng ý với Điều khoản và Chính sách bảo mật.");
+      setError("You must agree to the Terms and Privacy Policy.");
       return;
     }
 
@@ -39,12 +39,12 @@ export default function SignUpForm() {
       await AuthService.signup(name, username, password);
 
       // Đăng ký thành công, chuyển hướng đến trang đăng nhập
-      alert("Đăng ký thành công! Vui lòng đăng nhập.");
+      alert("Registration successful! Please sign in.");
       router.push("/signin");
 
     } catch (err: any) {
       // Hiển thị lỗi nếu có
-      setError(err.message || "Đã xảy ra lỗi. Vui lòng thử lại.");
+      setError(err.message || "An error occurred. Please try again.");
     }
   };
 

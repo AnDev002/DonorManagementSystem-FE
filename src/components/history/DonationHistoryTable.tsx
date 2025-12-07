@@ -19,30 +19,24 @@ const StatusBadge = ({ status }: { status: string }) => {
 
   switch (status) {
     case "Pending":
-      label = "Chờ duyệt";
-      colorClass = "bg-yellow-100 text-yellow-800 border border-yellow-200";
+      label = "Pending Approval";
       break;
     case "Confirmed":
-      label = "Đã duyệt - Hãy đến đúng giờ";
-      colorClass = "bg-blue-100 text-blue-800 border border-blue-200";
+      label = "Confirmed - Please arrive on time";
       break;
     case "ReadyToDonate":
-      label = "Đã khám sàng lọc";
-      colorClass = "bg-purple-100 text-purple-800 border border-purple-200";
+      label = "Screening Passed";
       break;
     case "Completed":
-      label = "Hoàn thành";
-      colorClass = "bg-green-100 text-green-800 border border-green-200";
+      label = "Completed";
       break;
     case "Cancelled":
-      label = "Đã hủy";
-      colorClass = "bg-red-100 text-red-800 border border-red-200";
+      label = "Cancelled";
       break;
     case "Rejected":
-      label = "Bị từ chối";
-      colorClass = "bg-red-100 text-red-800 border border-red-200";
+      label = "Rejected";
       break;
-  }
+    }
 
   return (
     <span className={clsx("inline-flex items-center px-3 py-1 rounded-full text-xs font-medium", colorClass)}>
@@ -53,11 +47,11 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 const DonationHistoryTable: React.FC<Props> = ({ title, data, isLoading, onCancelAppointment }) => {
   if (isLoading) {
-    return <div className="w-full p-8 text-center text-gray-500 bg-white rounded-lg shadow-sm border">Đang tải dữ liệu...</div>;
+    return <div className="w-full p-8 text-center text-gray-500 bg-white rounded-lg shadow-sm border">Loading data...</div>;
   }
 
   if (data.length === 0) {
-    return <div className="w-full p-8 text-center text-gray-500 bg-white rounded-lg shadow-sm border">Bạn chưa có lịch sử đăng ký nào.</div>;
+    return <div className="w-full p-8 text-center text-gray-500 bg-white rounded-lg shadow-sm border">You have no donation history.</div>;
   }
 
   return (
@@ -69,11 +63,11 @@ const DonationHistoryTable: React.FC<Props> = ({ title, data, isLoading, onCance
         <table className="w-full min-w-[800px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 text-left">
-              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Mã Đợt</th>
-              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Người Hiến</th>
-              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Ngày Hẹn</th>
-              <th className="p-4 text-xs font-semibold text-gray-500 uppercase text-center">Trạng Thái</th>
-              <th className="p-4 text-xs font-semibold text-gray-500 uppercase text-right">Hành động</th>
+              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">ID</th>
+              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Donor</th>
+              <th className="p-4 text-xs font-semibold text-gray-500 uppercase">Date</th>
+              <th className="p-4 text-xs font-semibold text-gray-500 uppercase text-center">Status</th>
+              <th className="p-4 text-xs font-semibold text-gray-500 uppercase text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -102,7 +96,7 @@ const DonationHistoryTable: React.FC<Props> = ({ title, data, isLoading, onCance
                             onClick={() => onCancelAppointment(item.id)}
                             className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-colors"
                         >
-                            Hủy lịch
+                            Cancel appointment
                         </button>
                     )}
                   </div>

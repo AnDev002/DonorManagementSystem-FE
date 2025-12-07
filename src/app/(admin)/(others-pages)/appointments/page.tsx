@@ -63,10 +63,34 @@ export default function AppointmentDetailPage() {
   // 3. Logic Status Steps
   const getStatusSteps = (status: string): StatusStep[] => {
     const isConfirmed = status === 'Confirmed';
+    
     return [
-      { text: 'Registered', minWidth: '102px', isDimmed: false, isLightFont: false },
-      { text: 'Waiting for approval', minWidth: '192px', isDimmed: false, isLightFont: false, marginLeft: '187px' },
-      { text: 'Approved', minWidth: '92px', isDimmed: !isConfirmed, isLightFont: !isConfirmed, marginLeft: '235px' },
+      { 
+        text: 'Registered', 
+        minWidth: '102px', 
+        // Bước này luôn là quá khứ, nên để mờ (dimmed) cho dễ nhìn
+        isDimmed: true, 
+        isLightFont: true 
+      },
+      { 
+        text: 'Waiting for approval', 
+        minWidth: '192px', 
+        // LOGIC MỚI: 
+        // Nếu đã Confirmed (Approved) -> Bước Waiting đã qua -> isDimmed = true (mờ đi)
+        // Nếu chưa Confirmed (Pending) -> Bước Waiting đang diễn ra -> isDimmed = false (sáng lên)
+        isDimmed: isConfirmed, 
+        isLightFont: isConfirmed, 
+        marginLeft: '187px' 
+      },
+      { 
+        text: 'Approved', 
+        minWidth: '92px', 
+        // Nếu đã Confirmed -> Sáng lên
+        // Nếu chưa Confirmed -> Mờ đi
+        isDimmed: !isConfirmed, 
+        isLightFont: !isConfirmed, 
+        marginLeft: '235px' 
+      },
     ];
   };
 

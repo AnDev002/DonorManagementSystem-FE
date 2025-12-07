@@ -62,7 +62,7 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
 
   const handleSubmit = () => {
     if (approvalStatus === null) {
-      alert("Vui lòng chọn trạng thái APPROVED hoặc NOT APPROVED.");
+      alert("Please select APPROVED or NOT APPROVED status.");
       return;
     }
     // Gom dữ liệu gửi lên
@@ -76,7 +76,7 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
   if (!donor) {
     return (
       <div className="flex h-64 w-full items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50">
-        <p className="text-xl text-gray-500">Vui lòng chọn bệnh nhân từ danh sách phía trên để bắt đầu khám.</p>
+        <p className="text-xl text-gray-500">Please select a patient from the waiting list to start examination.</p>
       </div>
     );
   }
@@ -87,17 +87,17 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
       {/* --- HEADER: THÔNG TIN BỆNH NHÂN (READ ONLY) --- */}
       <div className="mb-8 border-b border-gray-200 pb-6">
         <h2 className="mb-4 text-2xl font-bold uppercase text-red-600">
-          Thông tin bệnh nhân
+          Patient Information
         </h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div>
-            <Label>Họ và Tên</Label>
+            <Label>Full Name</Label>
             <div className="flex h-12 items-center rounded-lg bg-gray-100 px-4 text-lg font-bold text-gray-800">
               {donor.name}
             </div>
           </div>
           <div>
-            <Label>Tuổi</Label>
+            <Label>Age</Label>
             <div className="flex h-12 items-center rounded-lg bg-gray-100 px-4 text-lg font-bold text-gray-800">
               {donor.age}
             </div>
@@ -108,16 +108,16 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
       {/* --- SECTION: CHỈ SỐ SỨC KHỎE (INPUTS) --- */}
       <div className="mb-8">
         <h2 className="mb-4 text-xl font-bold uppercase text-gray-800">
-          Chỉ số sinh tồn & Xét nghiệm nhanh
+          Vital Signs & Rapid Test
         </h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           
           {/* Weight */}
           <div>
-            <Label>Cân nặng (kg) <span className="text-red-500">*</span></Label>
+            <Label>Weight (kg)<span className="text-red-500">*</span></Label>
             <Input 
               type="number" 
-              placeholder="VD: 65" 
+              placeholder="Ex: 65" 
               value={formData.weight}
               onChange={(e) => handleChange("weight", e.target.value)}
             />
@@ -125,13 +125,13 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
 
           {/* Blood Type */}
           <div>
-            <Label>Nhóm máu (Test nhanh) <span className="text-red-500">*</span></Label>
+            <Label>Blood Type (Rapid Test)<span className="text-red-500">*</span></Label>
             <select
               className="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm shadow-theme-xs focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
               value={formData.bloodType}
               onChange={(e) => handleChange("bloodType", e.target.value)}
             >
-              <option value="">Chọn nhóm máu</option>
+              <option value="">Select blood type</option>
               <option value="A">A</option>
               <option value="B">B</option>
               <option value="AB">AB</option>
@@ -141,7 +141,7 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
 
           {/* Temp */}
           <div>
-            <Label>Nhiệt độ (°C)</Label>
+            <Label>Temperature (°C)</Label>
             <Input 
               type="number" 
             //   step="0.1"
@@ -152,7 +152,7 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
 
           {/* BP */}
           <div>
-            <Label>Huyết áp (mmHg)</Label>
+            <Label>Blood Pressure (mmHg)</Label>
             <Input 
               placeholder="120/80" 
               value={formData.bloodPressure}
@@ -162,7 +162,7 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
 
           {/* Heart Rate */}
           <div>
-            <Label>Nhịp tim (bpm)</Label>
+            <Label>Heart Rate (bpm)</Label>
             <Input 
               type="number" 
               value={formData.heartRate}
@@ -174,10 +174,10 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
 
       {/* --- SECTION: NOTES --- */}
       <div className="mb-8">
-        <Label>Ghi chú bác sĩ / Lý do từ chối</Label>
+        <Label>Doctor's Notes / Rejection Reason</Label>
         <TextArea 
           rows={3} 
-          placeholder="Nhập ghi chú thêm..." 
+          placeholder="Enter additional notes..." 
           value={formData.notes}
           onChange={(val) => handleChange("notes", val)}
         />
@@ -186,7 +186,7 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
       {/* --- SECTION: TRIGGER CHECKBOXES (QUAN TRỌNG) --- */}
       <div className="mb-10 rounded-xl bg-gray-50 p-6 border border-gray-200">
         <h2 className="mb-4 text-center text-xl font-bold uppercase text-gray-800">
-          Kết luận
+          Conclusion
         </h2>
         <div className="flex flex-col items-center justify-center gap-8 md:flex-row md:gap-16">
           

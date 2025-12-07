@@ -27,7 +27,7 @@ const DonorInfoForm: React.FC<Props> = ({ data, onUpdate }) => {
   return (
     <form action="#" className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <div className="sm:col-span-2">
-        <Label htmlFor="donorName">Họ và Tên</Label>
+        <Label htmlFor="donorName">Full Name</Label>
         <Input
           id="donorName"
           placeholder="John Doe"
@@ -46,7 +46,7 @@ const DonorInfoForm: React.FC<Props> = ({ data, onUpdate }) => {
         />
       </div>
       <div>
-        <Label htmlFor="donorPhone">Số điện thoại</Label>
+        <Label htmlFor="donorPhone">Phone Number</Label>
         <Input
           id="donorPhone"
           placeholder="+123 456 7890"
@@ -55,7 +55,7 @@ const DonorInfoForm: React.FC<Props> = ({ data, onUpdate }) => {
         />
       </div>
       <div>
-        <Label htmlFor="donorDOB">Ngày sinh</Label>
+        <Label htmlFor="donorDOB">Date of Birth</Label>
         <DatePicker
           id="donorDOB"
           value={data.dob} 
@@ -64,14 +64,13 @@ const DonorInfoForm: React.FC<Props> = ({ data, onUpdate }) => {
         />
       </div>
       <div>
-        <Label htmlFor="donorBloodType">Nhóm máu</Label>
+        <Label htmlFor="donorBloodType">Blood Type</Label>
         <Select
-          id="donorBloodType" // Prop 'id' giờ đã hợp lệ
+          id="donorBloodType"
           value={data.bloodType}
-          // SỬA LỖI: Component Select trả về 'value' (string), không phải 'event'
           onChange={(value: string) => onUpdate("bloodType", value)}
           options={bloodTypeOptions} 
-          placeholder="Chọn nhóm máu"
+          placeholder="Select blood type"
         />
       </div>
     </form>
