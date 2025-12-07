@@ -44,7 +44,7 @@ const NotificationList = () => {
   if (loading) {
     return (
       <div className="w-full rounded-xl bg-white p-8 shadow-lg text-center text-gray-500">
-        Đang tải thông báo...
+        Notification loading...
       </div>
     );
   }
@@ -55,7 +55,7 @@ const NotificationList = () => {
         <div className="p-4 bg-gray-50 rounded-full">
           <BellIcon className="w-10 h-10 opacity-50" />
         </div>
-        <p>Bạn chưa có thông báo nào.</p>
+        <p>You don't have notifications.</p>
       </div>
     );
   }

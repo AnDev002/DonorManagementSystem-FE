@@ -21,8 +21,8 @@ export default function ForgotPasswordPage() {
       await AuthService.forgotPassword(email);
       setIsSuccess(true);
     } catch (err: any) {
-      // Hiển thị lỗi từ backend hoặc lỗi mặc định
-      setError(err.message || "Không thể gửi email. Vui lòng kiểm tra lại địa chỉ email.");
+      // Display error from backend or default error
+      setError(err.message || "Failed to send email. Please check your email address again.");
     } finally {
       setLoading(false);
     }
@@ -32,9 +32,9 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 p-6">
       <div className="w-full max-w-[450px] rounded-2xl bg-white p-8 shadow-xl border border-gray-100">
         
-        {/* Nút Back */}
+        {/* Back Button */}
         <Link href="/signin" className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700">
-          <ChevronLeftIcon className="w-4 h-4" /> Quay lại đăng nhập
+          <ChevronLeftIcon className="w-4 h-4" /> Back to sign in
         </Link>
 
         {!isSuccess ? (
@@ -43,19 +43,19 @@ export default function ForgotPasswordPage() {
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-[#CF2222]">
                 <MailIcon className="w-7 h-7" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">Quên mật khẩu?</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Forgot password?</h1>
               <p className="mt-2 text-sm text-gray-500">
-                Đừng lo, hãy nhập email của bạn và chúng tôi sẽ gửi hướng dẫn đặt lại mật khẩu.
+                Don't worry, enter your email and we'll send you password reset instructions.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <div>
-                <Label htmlFor="email">Email đăng ký</Label>
+                <Label htmlFor="email">Registered Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="nhap_email_cua_ban@example.com"
+                  placeholder="your_email@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
               {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
               <Button type="submit" className="w-full bg-[#CF2222] hover:bg-red-700 text-white" disabled={loading}>
-                {loading ? "Đang gửi..." : "Gửi link đặt lại mật khẩu"}
+                {loading ? "Sending..." : "Send reset link"}
               </Button>
             </form>
           </>
@@ -75,16 +75,16 @@ export default function ForgotPasswordPage() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
               <MailIcon className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Đã gửi email!</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Email sent!</h2>
             <p className="mt-2 text-gray-500 mb-8">
-              Chúng tôi đã gửi link đặt lại mật khẩu đến <br/>
+              We have sent a password reset link to <br/>
               <span className="font-medium text-gray-900">{email}</span>
             </p>
             <Button onClick={() => window.open('https://gmail.com', '_blank')} className="w-full bg-[#CF2222] hover:bg-red-700 text-white mb-4">
-              Mở hộp thư
+              Open Mail App
             </Button>
             <button onClick={() => setIsSuccess(false)} className="text-sm font-semibold text-[#CF2222] hover:underline">
-              Chưa nhận được? Gửi lại
+              Didn't receive it? Resend
             </button>
           </div>
         )}

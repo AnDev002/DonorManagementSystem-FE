@@ -21,11 +21,11 @@ function ResetPasswordForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp!");
+      setError("Confirm password not match!");
       return;
     }
     if (!token) {
-      setError("Token không hợp lệ hoặc đường dẫn đã hỏng.");
+      setError("Invalid token or link problem.");
       return;
     }
 
@@ -33,10 +33,10 @@ function ResetPasswordForm() {
     setError("");
     try {
       await AuthService.resetPassword(token, password);
-      alert("Đổi mật khẩu thành công! Chuyển hướng về trang đăng nhập...");
+      alert("Change password successful! Redirecting to the login page...");
       router.push("/signin");
     } catch (err: any) {
-      setError(err.message || "Token đã hết hạn hoặc không hợp lệ.");
+      setError(err.message || "Token has expired or is invalid.");
     } finally {
       setLoading(false);
     }
@@ -45,9 +45,9 @@ function ResetPasswordForm() {
   if (!token) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white p-8 rounded-xl shadow-lg text-center">
-            <p className="text-red-600 font-medium text-lg">Link không hợp lệ hoặc đã hết hạn.</p>
+            <p className="text-red-600 font-medium text-lg">The link is invalid or has expired.</p>
             <Button onClick={() => router.push('/forgot-password')} className="mt-4 bg-[#CF2222] text-white">
-                Yêu cầu link mới
+                Request a new link
             </Button>
         </div>
     </div>
@@ -60,17 +60,17 @@ function ResetPasswordForm() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-[#CF2222]">
             <LockIcon className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Đặt mật khẩu mới</h1>
-          <p className="mt-2 text-sm text-gray-500">Mật khẩu phải có ít nhất 6 ký tự.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Reset a new Password</h1>
+          <p className="mt-2 text-sm text-gray-500">Password need have at least 6 characters.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div>
-            <Label>Mật khẩu mới</Label>
+            <Label>New Password</Label>
             <div className="relative">
               <Input
                 type={showPass ? "text" : "password"}
-                placeholder="Nhập mật khẩu mới"
+                placeholder="New password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -87,10 +87,10 @@ function ResetPasswordForm() {
           </div>
 
           <div>
-            <Label>Xác nhận mật khẩu</Label>
+            <Label>Confirm Password</Label>
             <Input
               type="password"
-              placeholder="Nhập lại mật khẩu"
+              placeholder="Re-enter password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -101,7 +101,7 @@ function ResetPasswordForm() {
           {error && <p className="text-sm text-red-600 text-center font-medium">{error}</p>}
 
           <Button type="submit" className="w-full bg-[#CF2222] hover:bg-red-700 text-white" disabled={loading}>
-            {loading ? "Đang cập nhật..." : "Lưu mật khẩu"}
+            {loading ? "Updating..." : "Save password"}
           </Button>
         </form>
       </div>

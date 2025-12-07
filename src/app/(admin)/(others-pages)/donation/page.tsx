@@ -103,13 +103,13 @@ export default function CreateDonationPage() {
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-5 xl:gap-7.5">
             <div className="panel xl:col-span-3 rounded-xl bg-white p-6 shadow-lg md:p-8"> 
               <h3 className="mb-5 text-title-sm font-semibold text-gray-800 dark:text-gray-800">
-                Thông tin người hiến
+                Donor Information
               </h3>
               <DonorInfoForm data={formData} onUpdate={handleInputChange} />
             </div>
             <div className="panel xl:col-span-2 rounded-xl bg-white p-6 shadow-lg md:p-8"> 
               <h3 className="mb-5 text-title-sm font-semibold text-gray-800 dark:text-gray-800">
-                Chi tiết Lịch hẹn
+                Schedule Details
               </h3>
               <AppointmentForm data={formData} onUpdate={handleInputChange} />
             </div>

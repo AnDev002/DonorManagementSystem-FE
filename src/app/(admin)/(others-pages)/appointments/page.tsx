@@ -98,7 +98,7 @@ export default function AppointmentDetailPage() {
   if (loading) {
     return (
       <div className="flex h-[60vh] w-full items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-lg animate-pulse">Đang tải thông tin lịch hẹn...</p>
+        <p className="text-gray-500 text-lg animate-pulse">Appointment Loading...</p>
       </div>
     );
   }
@@ -110,14 +110,14 @@ export default function AppointmentDetailPage() {
         <div className="bg-white p-8 rounded-full mb-6 shadow-sm border border-gray-100">
           <CalendarIcon className="w-16 h-16 text-red-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Bạn chưa có lịch hẹn nào</h2>
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">You don't have any appointments</h2>
         <p className="text-gray-500 mb-8 text-center max-w-md">
-          Hãy đăng ký hiến máu ngay hôm nay để góp phần cứu sống người bệnh.
+          Register to donate blood today to help save lives.
         </p>
         <Link href="/donation">
           <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg rounded-xl shadow-lg flex items-center gap-2 transition-transform hover:scale-105">
             <PlusIcon className="w-5 h-5" />
-            Đăng ký ngay
+            Register Now
           </Button>
         </Link>
       </div>
@@ -130,7 +130,7 @@ export default function AppointmentDetailPage() {
   });
   const timeString = appointment.status === 'Confirmed'
     ? new Date(appointment.appointmentDate).toLocaleTimeString("vi-VN", {hour: '2-digit', minute:'2-digit'})
-    : "Đang chờ sắp xếp";
+    : "Pending arrangement";
 
   // Helper render dòng chi tiết
   const DetailItem = ({ label, value, highlight = false }: { label: string, value: string | number, highlight?: boolean }) => (
@@ -172,7 +172,7 @@ export default function AppointmentDetailPage() {
             <div className="mb-8 border-b border-white/20 pb-4 relative z-10">
                <h3 className="text-2xl font-bold text-white uppercase flex items-center gap-3">
                   <span className="w-1.5 h-8 bg-white rounded-full"></span>
-                  Thông tin chi tiết
+                  Information Details
                </h3>
             </div>
 
@@ -184,7 +184,7 @@ export default function AppointmentDetailPage() {
                     
                     {/* Nhóm máu nổi bật */}
                     <div className="p-4 bg-black/20 rounded-xl border border-white/10">
-                        <span className="text-xs font-bold text-red-200 uppercase block mb-1">Nhóm máu đăng ký</span>
+                        <span className="text-xs font-bold text-red-200 uppercase block mb-1">Register Blood Type</span>
                         <span className="text-3xl font-black text-white">{appointment.bloodType}</span>
                     </div>
                 </div>
@@ -206,7 +206,7 @@ export default function AppointmentDetailPage() {
                     onClick={handleCancel}
                     className="w-full md:w-auto px-8 py-3.5 rounded-xl border-2 border-white/30 text-white font-bold text-lg hover:bg-white/10 transition-colors"
                 >
-                    Hủy đăng ký
+                    Cancel Appointment
                 </button>
               )}
 
@@ -216,7 +216,7 @@ export default function AppointmentDetailPage() {
                 className="w-full md:w-auto px-10 py-3.5 rounded-xl bg-[#580b0b] text-white font-bold text-lg shadow-lg hover:bg-[#420808] transition-transform hover:scale-105 flex items-center justify-center gap-2"
               >
                 <HomeIcon className="w-5 h-5" />
-                Về trang chủ
+                Back To Home
               </button>
             </div>
         </div>
@@ -231,7 +231,7 @@ export default function AppointmentDetailPage() {
                     <div className="w-6 h-6 text-white"><PhoneIcon /></div> 
                 </div>
                 <div>
-                    <p className="text-red-200 text-sm font-medium">Hotline hỗ trợ y tế</p>
+                    <p className="text-red-200 text-sm font-medium">Medical Support Hotline</p>
                     <p className="text-xl font-bold text-white">(+84) 1900 1234</p>
                 </div>
             </div>
@@ -243,8 +243,8 @@ export default function AppointmentDetailPage() {
                     <div className="w-6 h-6 text-white"><HelpCircleIcon /></div>
                 </div>
                 <div>
-                    <p className="text-red-200 text-sm font-medium">Cần giải đáp thắc mắc?</p>
-                    <p className="text-xl font-bold text-white cursor-pointer hover:underline">Trung tâm trợ giúp</p>
+                    <p className="text-red-200 text-sm font-medium">Need help?</p>
+                    <p className="text-xl font-bold text-white cursor-pointer hover:underline">Support Center</p>
                 </div>
             </div>
         </div>
