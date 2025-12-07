@@ -161,7 +161,7 @@ export default function RecordDonationPage() {
                   
                   {isSubmitting && (
                     <p className="mt-4 text-sm text-red-500 animate-pulse font-medium">
-                      Đang lưu thông tin và cập nhật kho máu...
+                      Blood inventory data saving...
                     </p>
                   )}
                 </div>
