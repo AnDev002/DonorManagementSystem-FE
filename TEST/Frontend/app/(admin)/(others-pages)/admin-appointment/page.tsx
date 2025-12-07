@@ -1,6 +1,7 @@
+// src/app/(admin)/(others-pages)/admin-appointment/page.tsx
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import AppSidebar from "@/components/admin/layout/AppSidebar";
 import AppHeader from "@/components/admin/layout/AppHeader";
 import { Search, ChevronDown, RefreshCw } from "lucide-react";
@@ -33,41 +34,16 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-// Component Filter Dropdown hoạt động được (Sử dụng thẻ select)
-const FilterSelect = ({ 
-  label, 
-  options, 
-  value, 
-  onChange 
-}: { 
-  label: string; 
-  options: string[]; 
-  value: string; 
-  onChange: (val: string) => void; 
-}) => (
-  <div className="relative h-[49px] w-full min-w-[180px] md:w-auto">
-    <select
-      className="h-full w-full appearance-none rounded-lg border border-transparent bg-white px-4 pr-10 text-base text-[#233454] shadow-sm transition hover:border-gray-300 outline-none cursor-pointer focus:ring-2 focus:ring-red-500/20"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="">All {label}</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>
-          {opt}
-        </option>
-      ))}
-    </select>
-    <ChevronDown className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 pointer-events-none" />
+// Component Filter dropdown (UI only for now)
+const FilterDropdown = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex h-[49px] w-full min-w-[180px] items-center justify-between rounded-lg bg-white px-4 text-base text-[#233454] shadow-sm md:w-auto cursor-pointer border border-transparent hover:border-gray-300 transition">
+    <span>{value}</span>
+    <ChevronDown className="h-4 w-4 opacity-70" />
   </div>
 );
 
 export default function AppointmentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  // Thêm state cho bộ lọc
-  const [bloodTypeFilter, setBloodTypeFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  
   const [appointments, setAppointments] = useState<AppointmentHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -88,37 +64,13 @@ export default function AppointmentsPage() {
     fetchAppointments();
   }, []);
 
-  // Tự động lấy danh sách các tùy chọn Filter dựa trên dữ liệu thực tế
-  const uniqueBloodTypes = useMemo(() => {
-    const types = new Set(appointments.map(item => item.bloodType).filter(Boolean));
-    return Array.from(types).sort();
-  }, [appointments]);
-
-  const uniqueStatuses = useMemo(() => {
-    const statuses = new Set(appointments.map(item => item.status).filter(Boolean));
-    return Array.from(statuses).sort();
-  }, [appointments]);
-
-  // Filter logic: Kết hợp tìm kiếm và dropdown filter
-  const filteredData = useMemo(() => {
-    return appointments.filter((item) => {
-      const name = item.name || item.user?.name || "";
-      const phone = item.phone || "";
-      
-      // 1. Lọc theo từ khóa tìm kiếm
-      const matchesSearch = 
-        name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        phone.includes(searchTerm);
-
-      // 2. Lọc theo Blood Type
-      const matchesBloodType = bloodTypeFilter ? item.bloodType === bloodTypeFilter : true;
-
-      // 3. Lọc theo Status
-      const matchesStatus = statusFilter ? item.status === statusFilter : true;
-
-      return matchesSearch && matchesBloodType && matchesStatus;
-    });
-  }, [appointments, searchTerm, bloodTypeFilter, statusFilter]);
+  // Filter client-side theo tên hoặc số điện thoại
+  const filteredData = appointments.filter((item) => {
+    const name = item.name || item.user?.name || "";
+    const phone = item.phone || "";
+    const search = searchTerm.toLowerCase();
+    return name.toLowerCase().includes(search) || phone.includes(search);
+  });
 
   return (
     <div className="flex min-h-screen w-full bg-gray-50 font-inter">
@@ -148,20 +100,8 @@ export default function AppointmentsPage() {
 
             {/* Right Filters & Refresh */}
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
-              {/* Dropdown Filter đã được sửa */}
-              <FilterSelect 
-                label="Types" 
-                options={uniqueBloodTypes} 
-                value={bloodTypeFilter} 
-                onChange={setBloodTypeFilter} 
-              />
-              
-              <FilterSelect 
-                label="Status" 
-                options={uniqueStatuses} 
-                value={statusFilter} 
-                onChange={setStatusFilter} 
-              />
+              <FilterDropdown label="Blood Type" value="All Types" />
+              <FilterDropdown label="Status" value="All Status" />
               
               <button 
                 onClick={fetchAppointments}
