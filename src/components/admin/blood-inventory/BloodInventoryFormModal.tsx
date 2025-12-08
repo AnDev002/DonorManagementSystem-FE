@@ -6,6 +6,7 @@ import Button from "@/components/ui/button/Button";
 import Input from "@/components/form/input/InputField";
 import { InventoryService } from "@/services/InventoryService";
 import Label from "@/components/form/Label";
+import { LocationService } from "@/services/LocationService";
 
 interface BloodInventoryFormModalProps {
   isOpen: boolean;
@@ -19,18 +20,20 @@ export default function BloodInventoryFormModal({
   onSuccess,
 }: BloodInventoryFormModalProps) {
   const [loading, setLoading] = useState(false);
+  const [siteOptions, setSiteOptions] = useState<{id: number, name: string}[]>([]);
   
-  // 1. SỬA: Đặt giá trị mặc định là chuỗi rỗng "" (Không để số 1)
   const [formData, setFormData] = useState<{
     bloodType: string;
     rhType: string;
     volume: number;
     appointmentId: number | ""; 
+    sourceLocationId: number | ""; // <-- Trường mới: Địa điểm nguồn
   }>({
     bloodType: "A",
     rhType: "+",
     volume: 250,
-    appointmentId: "", // <--- QUAN TRỌNG: Phải là rỗng
+    appointmentId: "", 
+    sourceLocationId: "", 
   });
 
   const [isCustomType, setIsCustomType] = useState(false);
@@ -39,13 +42,21 @@ export default function BloodInventoryFormModal({
   // 2. SỬA: Reset form mỗi khi mở modal
   useEffect(() => {
     if (isOpen) {
+      // Reset form
       setFormData({
         bloodType: "A",
         rhType: "+",
         volume: 250,
-        appointmentId: "", // <--- QUAN TRỌNG: Reset về rỗng
+        appointmentId: "",
+        sourceLocationId: "",
       });
       setIsCustomType(false);
+
+      // Load sites
+      LocationService.getAllSites().then(sites => {
+        // Chỉ lấy id và name để hiển thị đơn giản
+        setSiteOptions(sites.map(s => ({ id: s.id, name: s.name })));
+      });
     }
   }, [isOpen]);
 
@@ -58,11 +69,21 @@ export default function BloodInventoryFormModal({
         volume: Number(formData.volume),
       };
 
-      // 3. LOGIC QUAN TRỌNG: Nếu rỗng thì xóa field này đi
+      // Xử lý appointmentId
       if (payload.appointmentId === "" || payload.appointmentId === 0) {
-        delete payload.appointmentId; // Backend sẽ nhận là undefined -> Chạy vào nhánh nhập thủ công
+        delete payload.appointmentId;
+        
+        // Nếu không có appointment (nhập tay), bắt buộc phải có sourceLocationId
+        if (!payload.sourceLocationId) {
+            alert("Vui lòng chọn địa điểm nguồn (Source Location) khi nhập thủ công.");
+            setLoading(false);
+            return;
+        }
+        payload.sourceLocationId = Number(payload.sourceLocationId);
       } else {
         payload.appointmentId = Number(payload.appointmentId);
+        // Nếu nhập từ appointment thì source location sẽ tự lấy từ appointment (logic backend xử lý)
+        delete payload.sourceLocationId; 
       }
 
       await InventoryService.create(payload);
@@ -71,8 +92,7 @@ export default function BloodInventoryFormModal({
       onClose();
     } catch (error: any) {
       console.error("Create failed", error);
-      // Hiển thị thông báo lỗi cụ thể hơn
-      alert(error.response?.data?.message || "Import error: ID exist in system.");
+      alert(error.response?.data?.message || "Import error.");
     } finally {
       setLoading(false);
     }
@@ -163,26 +183,48 @@ export default function BloodInventoryFormModal({
         </div>
 
         {/* Hàng 3: Appointment ID */}
-        <div>
-           <Label>Source Appointment ID (Optional)</Label>
-           <Input 
-             type="number" 
-             placeholder="Leave empty to create new type / manual import"
-             value={formData.appointmentId}
-             onChange={(e) => setFormData({...formData, appointmentId: e.target.value ? Number(e.target.value) : ""})}
-           />
-           <p className="text-xs text-gray-500 mt-1">
-             ⚠️ Để trống trường này nếu bạn muốn tạo Nhóm máu mới hoặc nhập kho thủ công.
-           </p>
+        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h4 className="text-sm font-bold text-gray-700 mb-3 uppercase border-b pb-2">Source Information</h4>
+            
+            {/* Cách 1: Nhập từ Appointment ID */}
+            <div className="mb-4">
+                <Label>Option 1: Import via Appointment ID</Label>
+                <Input 
+                    type="number" 
+                    placeholder="Enter Appointment ID"
+                    value={formData.appointmentId}
+                    onChange={(e) => setFormData({
+                        ...formData, 
+                        appointmentId: e.target.value ? Number(e.target.value) : "",
+                        sourceLocationId: "" // Clear source nếu nhập ID
+                    })}
+                />
+            </div>
+
+            <div className="text-center text-xs text-gray-400 mb-4">- OR -</div>
+
+            {/* Cách 2: Nhập thủ công (Chọn địa điểm) */}
+            <div className={formData.appointmentId ? "opacity-50 pointer-events-none" : ""}>
+                <Label>Option 2: Manual Import Source</Label>
+                <select
+                    className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm outline-none focus:border-red-500"
+                    value={formData.sourceLocationId}
+                    onChange={(e) => setFormData({...formData, sourceLocationId: e.target.value})}
+                    disabled={!!formData.appointmentId}
+                >
+                    <option value="">Select Donation Site...</option>
+                    {siteOptions.map(site => (
+                        <option key={site.id} value={site.id}>{site.name}</option>
+                    ))}
+                </select>
+            </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3 mt-4">
-          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-            Cancel
-          </Button>
+          <Button type="button" variant="outline" onClick={onClose} disabled={loading}>Cancel</Button>
           <Button type="submit" disabled={loading} className="bg-red-600 hover:bg-red-700 text-white">
-            {loading ? "Creating..." : "Create Group / Import"}
+            {loading ? "Processing..." : "Import"}
           </Button>
         </div>
       </form>
