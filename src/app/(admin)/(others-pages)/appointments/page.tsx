@@ -125,7 +125,7 @@ export default function AppointmentDetailPage() {
   }
 
   // --- RENDER: Có lịch hẹn (Main UI) ---
-  const formattedDate = new Date(appointment.appointmentDate).toLocaleDateString("vi-VN", {
+  const formattedDate = new Date(appointment.appointmentDate).toLocaleDateString("en-GB", {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
   const timeString = appointment.status === 'Confirmed'
@@ -179,8 +179,8 @@ export default function AppointmentDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-16 relative z-10">
                 {/* Cột 1 */}
                 <div className="flex flex-col gap-8">
-                    <DetailItem label="Họ và tên" value={appointment.name} highlight />
-                    <DetailItem label="Số điện thoại" value={appointment.phone} />
+                    <DetailItem label="Full Name" value={appointment.name} highlight />
+                    <DetailItem label="Phone Number" value={appointment.phone} />
                     
                     {/* Nhóm máu nổi bật */}
                     <div className="p-4 bg-black/20 rounded-xl border border-white/10">
@@ -191,9 +191,9 @@ export default function AppointmentDetailPage() {
 
                 {/* Cột 2 */}
                 <div className="flex flex-col gap-8">
-                    <DetailItem label="Địa điểm hiến máu" value={appointment.location} />
-                    <DetailItem label="Ngày hẹn" value={formattedDate} />
-                    <DetailItem label="Giờ hẹn cụ thể" value={timeString} highlight={appointment.status === 'Confirmed'} />
+                    <DetailItem label="Appointment Location" value={appointment.location} />
+                    <DetailItem label="Ccheduled Date" value={formattedDate} />
+                    <DetailItem label="Appointment Time" value={timeString} highlight={appointment.status === 'Confirmed'} />
                 </div>
             </div>
 
