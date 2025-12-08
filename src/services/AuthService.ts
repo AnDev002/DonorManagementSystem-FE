@@ -6,7 +6,13 @@ interface LoginResponse {
   access_token: string;
   user: User;
 }
-
+export interface UpdateProfileData {
+  name?: string;
+  phone?: string;
+  address?: string;
+  bio?: string;
+  // thêm các trường khác nếu DB có
+}
 export const AuthService = {
   async signin(username: string, password: string) {
      try {
@@ -33,7 +39,16 @@ export const AuthService = {
      document.cookie = 'token=; path=/; max-age=0;';
      window.location.href = '/signin';
   },
-
+  async updateProfile(data: UpdateProfileData) {
+    const res = await apiClient.patch<User>('/auth/profile', data);
+    // Cập nhật lại localStorage để đồng bộ dữ liệu mới ngay lập tức
+    if (res) {
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const updatedUser = { ...currentUser, ...res };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+    return res;
+  },
   async getMe() {
     const token = getAccessToken();
     if (!token) return null;
