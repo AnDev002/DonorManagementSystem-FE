@@ -62,9 +62,10 @@ const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
             {timeString}
           </span>
         </div>
-        <p className={clsx("text-sm font-normal", !item.isRead ? "text-gray-800" : "text-gray-500")}>
-          {item.message}
-        </p>
+        <p 
+          className={clsx("text-sm font-normal", !item.isRead ? "text-gray-800" : "text-gray-500")}
+          dangerouslySetInnerHTML={{ __html: item.message }} 
+        />
       </div>
 
       {/* 3. Tag "New" */}

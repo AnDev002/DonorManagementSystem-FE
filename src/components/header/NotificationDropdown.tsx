@@ -112,9 +112,10 @@ export default function NotificationDropdown() {
                     <p className={clsx("text-sm font-medium", !item.isRead ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-gray-400")}>
                         {item.title}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                        {item.message}
-                    </p>
+                    <p 
+                        className="text-xs text-gray-500 mt-1 line-clamp-2"
+                        dangerouslySetInnerHTML={{ __html: item.message }}
+                    />
                     <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                         <ClockIcon className="w-3 h-3" />
                         {new Date(item.createdAt).toLocaleString('en-GB')}

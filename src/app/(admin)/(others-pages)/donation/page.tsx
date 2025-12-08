@@ -15,6 +15,20 @@ export default function CreateDonationPage() {
   const router = useRouter();
   const { user } = useAuth();
   
+  const calculateAge = (dobString: string) => {
+    if (!dobString) return 0;
+    const birthDate = new Date(dobString);
+    const today = new Date();
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Nếu chưa đến tháng sinh hoặc cùng tháng nhưng chưa đến ngày sinh thì trừ 1 tuổi
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
   const isValidPhone = (phone: string) => {
     const regex = /^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$/;
@@ -48,12 +62,12 @@ export default function CreateDonationPage() {
   const handleSubmit = async () => {
     setError(null);
     
-    // 1. Validate dữ liệu
+    // Validate dữ liệu
     if (!formData.appointmentDate) {
       setError("Please select an appointment date.");
       return;
     }
-    if (!formData.location) { // <-- Thêm validate location
+    if (!formData.location) { 
         setError("Please select a donation location.");
         return;
     }
@@ -63,6 +77,17 @@ export default function CreateDonationPage() {
     }
     if (!isValidPhone(formData.phone)) {
         setError("Invalid phone number format. Please check again.");
+        return;
+    }
+
+    // 2. Thêm Validate tuổi (18+)
+    if (!formData.dob) {
+        setError("Please select your Date of Birth.");
+        return;
+    }
+    const age = calculateAge(formData.dob);
+    if (age < 18) {
+        setError(`You must be at least 18 years old to donate blood. (Current age: ${age})`);
         return;
     }
 
@@ -76,15 +101,11 @@ export default function CreateDonationPage() {
       const payload = {
         ...formData,
         appointmentDate: dateObj.toISOString(), 
-        // --- SỬA LỖI TẠI ĐÂY ---
-        // Chuyển 'location' (đang chứa ID dạng string từ form) sang 'donationSiteId' (number)
         donationSiteId: Number(formData.location), 
       };
 
-      // Gọi API (Cast 'as any' để tránh lỗi TypeScript tạm thời nếu bạn chưa cập nhật interface)
       await AppointmentService.createAppointment(payload as any);
 
-      // 3. Thành công
       alert("Registration successful! Please wait for doctor confirmation.");
       router.push("/history");
 
