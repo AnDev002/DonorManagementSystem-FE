@@ -1,4 +1,3 @@
-// src/components/schedule/WorkSchedule.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -222,7 +221,9 @@ export default function WorkSchedule() {
               ) : (
                 appointmentsOnSelectedDate.map(apt => {
                   const aptTime = new Date(apt.appointmentDate);
-                  const hasTimeSet = apt.status === 'Confirmed' || apt.status === 'Completed';
+                  // --- CẬP NHẬT LOGIC TẠI ĐÂY ---
+                  // Coi Confirmed, Completed VÀ ReadyToDonate là đã có giờ
+                  const hasTimeSet = ['Confirmed', 'Completed', 'ReadyToDonate'].includes(apt.status);
                   const timeString = aptTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
                   return (
@@ -235,10 +236,11 @@ export default function WorkSchedule() {
                         <div className={clsx(
                           "px-2 py-1 rounded text-xs font-bold",
                           apt.status === 'Confirmed' ? "bg-green-100 text-green-700" :
+                          apt.status === 'ReadyToDonate' ? "bg-blue-100 text-blue-700" : // Thêm màu cho ReadyToDonate
                           apt.status === 'Pending' ? "bg-yellow-100 text-yellow-700" :
                           "bg-gray-100 text-gray-600"
                         )}>
-                          {apt.status}
+                          {apt.status === 'ReadyToDonate' ? 'Screening Passed' : apt.status}
                         </div>
                       </div>
 
