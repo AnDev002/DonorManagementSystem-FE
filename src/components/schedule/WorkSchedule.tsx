@@ -1,3 +1,4 @@
+// src/components/schedule/WorkSchedule.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -12,30 +13,23 @@ import clsx from "clsx";
 // --- TYPES ---
 interface Appointment {
   id: number;
-  appointmentDate: string; // ISO string
+  appointmentDate: string; // ISO string từ DB
   status: string;
-  name?: string; // Tên khách vãng lai
-  user?: { name: string; email: string }; // Tên user hệ thống
+  name?: string; 
+  user?: { name: string; email: string }; 
   phone?: string;
 }
 
-// Helper để lấy ngày đầu/cuối tháng
-const getMonthRange = (date: Date) => {
-  const start = new Date(date.getFullYear(), date.getMonth(), 1);
-  const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
-  return { start, end };
-};
-
-// --- SỬA LỖI TIMEZONE ---
-// Thay vì dùng toISOString() (bị lệch múi giờ), ta lấy ngày/tháng/năm trực tiếp từ Local Time
-const formatDateStr = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+// Helper: So sánh 2 đối tượng Date có cùng ngày/tháng/năm không
+const isSameDay = (date1: Date, date2: Date) => {
+  return (
+    date1.getDate() === date2.getDate() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear()
+  );
+};
 
 export default function WorkSchedule() {
   // State quản lý thời gian
@@ -55,10 +49,22 @@ export default function WorkSchedule() {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const { start, end } = getMonthRange(currentMonth);
-      // Lấy dư ra vài ngày để chắc chắn cover các trường hợp lệch biên
-      const startStr = formatDateStr(new Date(start.setDate(start.getDate() - 1)));
-      const endStr = formatDateStr(new Date(end.setDate(end.getDate() + 2)));
+      // Tính ngày đầu và cuối của view lịch (bao gồm cả padding của tháng trước/sau)
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+      const firstDayOfMonth = new Date(year, month, 1);
+      const lastDayOfMonth = new Date(year, month + 1, 0);
+      
+      // Lấy dư ra 7 ngày trước và sau để cover hết grid lịch
+      const startRange = new Date(firstDayOfMonth);
+      startRange.setDate(startRange.getDate() - 7);
+      
+      const endRange = new Date(lastDayOfMonth);
+      endRange.setDate(endRange.getDate() + 7);
+
+      // Convert sang string YYYY-MM-DD để gửi API
+      const startStr = startRange.toISOString().split('T')[0];
+      const endStr = endRange.toISOString().split('T')[0];
       
       const data = await AppointmentService.getAppointmentsByRange(startStr, endStr);
       if (Array.isArray(data)) {
@@ -85,11 +91,12 @@ export default function WorkSchedule() {
     const daysInMonth = lastDay.getDate();
     const startDayOfWeek = firstDay.getDay(); // 0 (Sun) -> 6 (Sat)
 
-    const grid: { date: number; isCurrentMonth: boolean; fullDate?: Date }[] = [];
+    const grid: { date: number; isCurrentMonth: boolean; fullDate: Date }[] = [];
 
     // Padding ngày tháng trước
     for (let i = 0; i < startDayOfWeek; i++) {
-      grid.push({ date: 0, isCurrentMonth: false });
+        const prevDate = new Date(year, month, 0 - (startDayOfWeek - 1 - i));
+        grid.push({ date: prevDate.getDate(), isCurrentMonth: false, fullDate: prevDate });
     }
 
     // Ngày trong tháng hiện tại
@@ -100,27 +107,28 @@ export default function WorkSchedule() {
         fullDate: new Date(year, month, i) 
       });
     }
+    
+    // Padding ngày tháng sau (cho đủ lưới 35 hoặc 42 ô nếu cần)
+    const remainingCells = 42 - grid.length;
+    for(let i = 1; i <= remainingCells; i++) {
+        const nextDate = new Date(year, month + 1, i);
+        grid.push({ date: nextDate.getDate(), isCurrentMonth: false, fullDate: nextDate });
+    }
 
     return grid;
   }, [currentMonth]);
 
   // 3. Lọc danh sách cho ngày đang chọn
   const appointmentsOnSelectedDate = useMemo(() => {
-    // selectedStr bây giờ là YYYY-MM-DD theo giờ địa phương
-    const selectedStr = formatDateStr(selectedDate);
-    
     return appointments.filter(apt => {
-        // Cần đảm bảo apt.appointmentDate (ISO string từ DB) cũng được so sánh đúng
-        // Cách đơn giản nhất: So sánh chuỗi ngày YYYY-MM-DD
-        // Lưu ý: Backend thường trả về UTC (VD: 2025-12-09T00:00:00Z).
-        // Nếu bạn muốn hiển thị đúng ngày user đã chọn lúc đăng ký, ta chỉ cần cắt chuỗi ISO 10 ký tự đầu.
-        return apt.appointmentDate.substring(0, 10) === selectedStr;
+        const aptDate = new Date(apt.appointmentDate);
+        return isSameDay(aptDate, selectedDate);
     });
   }, [selectedDate, appointments]);
 
   // Handler chuyển tháng
-  const handlePrevMonth = () => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)));
-  const handleNextMonth = () => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() + 1)));
+  const handlePrevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  const handleNextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
 
   // Handler mở Modal set giờ
   const handleOpenSetTime = (apt: Appointment) => {
@@ -129,10 +137,10 @@ export default function WorkSchedule() {
     const hours = dateObj.getHours().toString().padStart(2, '0');
     const minutes = dateObj.getMinutes().toString().padStart(2, '0');
     
-    // Nếu status là Pending, chưa có giờ -> default 08:00
-    // Nếu đã Confirmed/ReadyToDonate -> lấy giờ hiện tại của appointment
-    const hasTimeSet = ['Confirmed', 'Completed', 'ReadyToDonate'].includes(apt.status);
-    setTimeSlot(hasTimeSet ? `${hours}:${minutes}` : "08:00");
+    // Logic: Nếu giờ là 00:00 (mặc định) hoặc status là Pending -> Gợi ý 08:00
+    // Nếu đã có giờ set rồi -> Hiển thị giờ hiện tại
+    const isDefaultTime = hours === '00' && minutes === '00';
+    setTimeSlot(isDefaultTime ? "08:00" : `${hours}:${minutes}`);
     
     setIsModalOpen(true);
   };
@@ -144,7 +152,7 @@ export default function WorkSchedule() {
       await AppointmentService.updateTimeSlot(editingApt.id, timeSlot);
       alert("Time updated successfully!");
       setIsModalOpen(false);
-      fetchAppointments(); // Reload data
+      fetchAppointments(); // Reload data để cập nhật status và giờ mới
     } catch (error) {
       console.error(error);
       alert("Failed to update time");
@@ -161,8 +169,7 @@ export default function WorkSchedule() {
           <button onClick={handlePrevMonth} className="p-2 hover:bg-white/20 rounded-full transition">
             <ChevronLeftIcon className="w-6 h-6 text-white" />
           </button>
-          <span className="text-xl font-bold min-w-[150px] text-center">
-            {/* SỬA NGÔN NGỮ: en-US */}
+          <span className="text-xl font-bold min-w-[180px] text-center capitalize">
             {currentMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
           </span>
           <button onClick={handleNextMonth} className="p-2 hover:bg-white/20 rounded-full transition">
@@ -185,22 +192,21 @@ export default function WorkSchedule() {
           {/* Days Grid */}
           <div className="grid grid-cols-7 gap-2">
             {calendarGrid.map((cell, idx) => {
-              if (!cell.isCurrentMonth) return <div key={idx} className="h-24 md:h-32"></div>;
-
-              const dateStr = cell.fullDate ? formatDateStr(cell.fullDate) : "";
-              // Logic đếm số lượng cuộc hẹn trong ngày
-              const dayApts = appointments.filter(a => a.appointmentDate.substring(0, 10) === dateStr);
+              // Lọc các appointment trùng ngày với ô lịch
+              const dayApts = appointments.filter(a => isSameDay(new Date(a.appointmentDate), cell.fullDate));
+              const pendingCount = dayApts.filter(a => a.status === 'Pending').length;
               
-              const isSelected = selectedDate.getDate() === cell.date && selectedDate.getMonth() === currentMonth.getMonth();
-              const isToday = new Date().toDateString() === cell.fullDate?.toDateString();
+              const isSelected = isSameDay(selectedDate, cell.fullDate);
+              const isToday = isSameDay(new Date(), cell.fullDate);
 
               return (
                 <div 
                   key={idx}
-                  onClick={() => cell.fullDate && setSelectedDate(cell.fullDate)}
+                  onClick={() => setSelectedDate(cell.fullDate)}
                   className={clsx(
                     "h-24 md:h-32 border rounded-xl p-2 cursor-pointer transition-all relative flex flex-col justify-between hover:shadow-md",
                     isSelected ? "border-[#CF2222] bg-red-50" : "border-gray-100 bg-white",
+                    !cell.isCurrentMonth && "bg-gray-50/50 opacity-60", // Làm mờ ngày tháng khác
                     isToday && !isSelected && "border-blue-300 bg-blue-50"
                   )}
                 >
@@ -212,10 +218,19 @@ export default function WorkSchedule() {
                   </span>
 
                   {/* Indicators */}
-                  <div className="flex flex-wrap gap-1 content-end">
+                  <div className="flex flex-col gap-1 w-full">
                     {dayApts.length > 0 && (
-                      <div className="w-full text-xs font-medium text-center bg-red-100 text-red-600 rounded-md py-1">
-                        {dayApts.length} Appts
+                      <div className="flex items-center gap-1">
+                         {/* Nếu có Pending (đang chờ xếp lịch) hiện màu vàng */}
+                         {pendingCount > 0 ? (
+                            <span className="w-full text-[10px] font-bold text-center bg-yellow-100 text-yellow-700 rounded px-1 py-0.5 border border-yellow-200">
+                                {pendingCount} Pending
+                            </span>
+                         ) : (
+                            <span className="w-full text-[10px] font-bold text-center bg-green-100 text-green-700 rounded px-1 py-0.5">
+                                {dayApts.length} Set
+                            </span>
+                         )}
                       </div>
                     )}
                   </div>
@@ -227,60 +242,64 @@ export default function WorkSchedule() {
 
         {/* RIGHT: APPOINTMENT LIST FOR SELECTED DATE */}
         <div className="w-full lg:w-1/3 flex flex-col gap-4">
-          <div className="bg-[#CF2222]/10 p-6 rounded-2xl border border-[#CF2222]/20 min-h-[400px]">
+          <div className="bg-[#CF2222]/5 p-6 rounded-2xl border border-[#CF2222]/10 min-h-[400px]">
             <h3 className="text-xl font-bold text-gray-800 mb-2">Appointments</h3>
             
-            {/* SỬA NGÔN NGỮ HIỂN THỊ NGÀY ĐANG CHỌN: en-GB */}
             <p className="text-[#CF2222] font-semibold text-lg mb-6 border-b border-red-200 pb-4">
               {selectedDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
 
             <div className="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
               {appointmentsOnSelectedDate.length === 0 ? (
-                <p className="text-gray-500 text-center italic mt-10">No appointments for this day.</p>
+                <div className="flex flex-col items-center justify-center mt-10 text-gray-400">
+                    <p className="italic">No appointments for this day.</p>
+                </div>
               ) : (
                 appointmentsOnSelectedDate.map(apt => {
                   const aptTime = new Date(apt.appointmentDate);
+                  // Kiểm tra xem đã có giờ cụ thể chưa (nếu 00:00 là chưa set)
+                  const hours = aptTime.getHours();
+                  const minutes = aptTime.getMinutes();
+                  const isTimeSet = !(hours === 0 && minutes === 0);
                   
-                  // Các trạng thái được coi là "Đã có giờ" để hiển thị
-                  const hasTimeSet = ['Confirmed', 'Completed', 'ReadyToDonate'].includes(apt.status);
-                  
-                  // Format giờ hiển thị (HH:mm)
                   const timeString = aptTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
                   return (
-                    <div key={apt.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
+                    <div key={apt.id} className={clsx(
+                        "p-4 rounded-xl shadow-sm border flex flex-col gap-2 transition-all",
+                        apt.status === 'Pending' ? "bg-yellow-50 border-yellow-200" : "bg-white border-gray-100"
+                    )}>
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="font-bold text-gray-900">{apt.name || apt.user?.name || "Unknown"}</div>
-                          <div className="text-xs text-gray-500">{apt.phone || "No Phone"}</div>
+                          <div className="font-bold text-gray-900">{apt.name || apt.user?.name || "Unknown Donor"}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">{apt.phone || "No phone number"}</div>
                         </div>
                         <div className={clsx(
-                          "px-2 py-1 rounded text-xs font-bold",
+                          "px-2 py-1 rounded text-xs font-bold uppercase",
                           apt.status === 'Confirmed' ? "bg-green-100 text-green-700" :
-                          apt.status === 'ReadyToDonate' ? "bg-blue-100 text-blue-700" : // Màu xanh cho trạng thái Ready
-                          apt.status === 'Pending' ? "bg-yellow-100 text-yellow-700" :
+                          apt.status === 'ReadyToDonate' ? "bg-blue-100 text-blue-700" :
+                          apt.status === 'Pending' ? "bg-red-100 text-red-700 animate-pulse" :
                           "bg-gray-100 text-gray-600"
                         )}>
-                          {apt.status === 'ReadyToDonate' ? 'Screening Passed' : apt.status}
+                          {apt.status}
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
-                        {hasTimeSet ? (
-                          <div className="flex items-center gap-2 text-gray-700 font-medium bg-gray-50 px-3 py-1.5 rounded-lg">
-                            <ClockIcon className="w-4 h-4" />
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-black/5">
+                        {isTimeSet ? (
+                          <div className="flex items-center gap-2 text-gray-700 font-bold bg-white px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm">
+                            <ClockIcon className="w-4 h-4 text-[#CF2222]" />
                             {timeString}
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-400 italic">Time not set</span>
+                          <span className="text-sm text-red-500 font-medium italic">Time not set</span>
                         )}
 
                         <button 
                           onClick={() => handleOpenSetTime(apt)}
-                          className="text-xs font-bold text-white bg-[#CF2222] hover:bg-red-700 px-3 py-2 rounded-lg transition shadow-sm"
+                          className="text-xs font-bold text-white bg-[#CF2222] hover:bg-red-700 px-4 py-2 rounded-lg transition shadow-md active:scale-95"
                         >
-                          {hasTimeSet ? "Change Time" : "Set Time"}
+                          {isTimeSet ? "Change Time" : "Set Time"}
                         </button>
                       </div>
                     </div>
@@ -297,27 +316,28 @@ export default function WorkSchedule() {
         <div className="flex flex-col gap-4">
           <h3 className="text-xl font-bold text-gray-800">Set Appointment Time</h3>
           {editingApt && (
-            <p className="text-sm text-gray-600">
-              Donor: <span className="font-bold">{editingApt.name || editingApt.user?.name}</span>
-            </p>
+            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                <p className="text-sm text-gray-500">Donor</p>
+                <p className="font-bold text-gray-900">{editingApt.name || editingApt.user?.name}</p>
+            </div>
           )}
           
           <div className="mt-2">
-            <Label>Select Time</Label>
+            <Label>Select Time Slot</Label>
             <Input 
               type="time" 
               value={timeSlot} 
               onChange={(e) => setTimeSlot(e.target.value)}
-              className="text-lg font-medium" 
+              className="text-lg font-medium h-14" 
             />
-            <p className="text-xs text-gray-500 mt-2">
-              *Setting time will automatically change status to <strong>Confirmed</strong>.
+            <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+              *Setting a time will automatically change status from <strong>Pending</strong> to <strong>Confirmed</strong> and notify the donor.
             </p>
           </div>
 
           <div className="flex justify-end gap-3 mt-4">
             <Button variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button size="sm" onClick={handleSaveTime} className="bg-[#CF2222] hover:bg-red-700">Confirm & Save</Button>
+            <Button size="sm" onClick={handleSaveTime} className="bg-[#CF2222] hover:bg-red-700 text-white shadow-lg">Confirm & Save</Button>
           </div>
         </div>
       </Modal>
