@@ -1,6 +1,6 @@
-// src/app/(admin)/(others-pages)/history/[id]/page.tsx
 "use client";
 import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation"; // <-- IMPORT useParams
 import HistoryHeaderGraphic from "@/components/history/HistoryHeaderGraphic";
 import {
   DonationDetailRow,
@@ -15,7 +15,6 @@ import {
   TruckIcon,
   PackageIcon,
 } from "@/icons";
-import useGoBack from "@/hooks/useGoBack";
 import { AppointmentService } from "@/services/AppointmentService";
 import { DonationDetail } from "@/types/history";
 
@@ -28,9 +27,11 @@ interface JourneyStepData {
   showConnector: boolean;
 }
 
-export default function HistoryDetailPage({ params }: { params: { id: string } }) {
-  const goBack = useGoBack();
-  const { id } = params;
+export default function HistoryDetailPage() {
+  const router = useRouter();
+  const params = useParams(); // <-- SỬ DỤNG HOOK useParams
+  // Ép kiểu id về string (vì useParams có thể trả về string | string[])
+  const id = Array.isArray(params?.id) ? params?.id[0] : params?.id;
 
   // State lưu dữ liệu
   const [details, setDetails] = useState<DonationDetail[]>([]);
@@ -39,10 +40,16 @@ export default function HistoryDetailPage({ params }: { params: { id: string } }
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Nếu không có ID, tắt loading và báo lỗi ngay
+    if (!id) {
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. Gọi API lấy chi tiết lịch hẹn theo ID
+        // Gọi API
         const data = await AppointmentService.getAppointmentById(id);
 
         if (!data) {
@@ -50,7 +57,7 @@ export default function HistoryDetailPage({ params }: { params: { id: string } }
           return;
         }
 
-        // Format ngày tháng
+        // --- Xử lý dữ liệu hiển thị ---
         const dateObj = new Date(data.appointmentDate);
         const dateString = dateObj.toLocaleDateString("vi-VN");
         const timeString = dateObj.toLocaleTimeString("vi-VN", {
@@ -58,7 +65,7 @@ export default function HistoryDetailPage({ params }: { params: { id: string } }
           minute: "2-digit",
         });
 
-        // 2. Map dữ liệu vào bảng chi tiết (Details Row)
+        // 1. Map thông tin chi tiết
         const mappedDetails: DonationDetail[] = [
           {
             label: "Day:",
@@ -68,7 +75,7 @@ export default function HistoryDetailPage({ params }: { params: { id: string } }
           },
           {
             label: "Time:",
-            value: timeString, // Thêm giờ
+            value: timeString,
             isLabelBold: false,
             isLabelInset: true,
           },
@@ -85,19 +92,15 @@ export default function HistoryDetailPage({ params }: { params: { id: string } }
             isLabelInset: true,
           },
           {
-            label: "Donor Name:", // Thêm tên người hiến
+            label: "Donor Name:",
             value: data.name,
             isLabelBold: false,
             isLabelInset: false,
           },
-          // Ghi chú: Nếu có thông tin thể tích/cân nặng từ API thì map vào đây
-          // Hiện tại AppointmentData cơ bản chưa có Volume kết quả, có thể để placeholder hoặc ẩn
         ];
-
         setDetails(mappedDetails);
 
-        // 3. Map dữ liệu vào Hành trình (Blood Journey)
-        // Lưu ý: Các bước sau 'Donate blood' đang là giả lập dựa trên ngày hiến
+        // 2. Map hành trình (Giả lập các bước sau bước 1)
         const nextDay = new Date(dateObj);
         nextDay.setDate(dateObj.getDate() + 1);
         const nextDayString = nextDay.toLocaleDateString("vi-VN");
@@ -107,51 +110,57 @@ export default function HistoryDetailPage({ params }: { params: { id: string } }
             icon: DropletIcon,
             iconAlt: "Donate blood",
             title: "Donate blood",
-            date: dateString, // Ngày thực tế
+            date: dateString,
             showConnector: true,
           },
           {
             icon: WarehouseIcon,
             iconAlt: "Warehouse",
             title: "Processing & Storage",
-            date: dateString, // Giả lập cùng ngày
+            date: dateString,
             showConnector: true,
           },
           {
             icon: TruckIcon,
             iconAlt: "Distribution",
             title: "Ready for Distribution",
-            date: nextDayString, // Giả lập ngày hôm sau
+            date: nextDayString,
             showConnector: false,
           },
         ]);
 
       } catch (err) {
         console.error(err);
-        setError("Lỗi khi tải dữ liệu.");
+        setError("Lỗi kết nối hoặc không tải được dữ liệu.");
       } finally {
-        setLoading(false);
+        setLoading(false); // Luôn tắt loading dù thành công hay thất bại
       }
     };
 
-    if (id) {
-      fetchData();
-    }
+    fetchData();
   }, [id]);
+
+  // Xử lý nút Back
+  const handleGoBack = () => router.back();
 
   if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <p className="text-gray-500">Loading details...</p>
+      <div className="flex h-screen w-full items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-600 border-t-transparent"></div>
+          <p className="text-gray-500 font-medium">Loading details...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center gap-4">
-        <p className="text-red-500">{error}</p>
-        <Button onClick={goBack} size="sm">Back</Button>
+      <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-gray-50">
+        <p className="text-red-500 font-semibold text-lg">{error}</p>
+        <Button onClick={handleGoBack} size="sm" className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100">
+          Quay lại
+        </Button>
       </div>
     );
   }
@@ -207,11 +216,11 @@ export default function HistoryDetailPage({ params }: { params: { id: string } }
         </div>
       </div>
 
-      <div className="w-full flex justify-center mt-8">
+      <div className="w-full flex justify-center mt-8 pb-10">
         <Button
           variant="outline"
           size="sm"
-          onClick={goBack}
+          onClick={handleGoBack}
           startIcon={<ChevronLeftIcon />}
         >
           Back to History
