@@ -13,10 +13,12 @@ import {
   Star, 
   ShieldCheck, 
   ChevronLeft, 
-  ChevronRight 
+  ChevronRight, 
+  UserIcon
 } from "lucide-react";
 import clsx from "clsx";
-
+import { useAuth } from "@/context/AuthContext"; // 1. Import AuthContext
+import { useRouter } from "next/navigation";     // 2. Import Router
 // --- MOCK DATA ---
 
 const doctorInfo = {
@@ -30,6 +32,8 @@ const doctorInfo = {
     location: "Room 302, Building A, Bach Mai Hospital",
   },
 };
+
+
 
 // Dữ liệu lịch làm việc giả lập (Tháng hiện tại)
 const calendarDays = [
@@ -59,12 +63,23 @@ const InfoRow = ({ icon: Icon, label, value }: { icon: any, label: string, value
     </div>
     <div>
       <p className="text-xs text-gray-500 font-medium uppercase">{label}</p>
-      <p className="text-sm font-semibold text-gray-800">{value}</p>
+      <p className="text-sm font-semibold text-gray-800 break-all">{value || "Not updated"}</p>
     </div>
   </div>
 );
 
 const DoctorProfileCard = () => {
+  const { user } = useAuth(); // 3. Lấy user hiện tại
+  const router = useRouter();
+
+  // 4. Xử lý redirect
+  const handleEditClick = () => {
+    router.push("/profile");
+  };
+
+  // Fallback nếu user chưa load xong
+  if (!user) return <div className="p-6 text-center">Loading profile...</div>;
+
   return (
     <div className="w-full bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
       {/* Header Cover */}
@@ -75,12 +90,15 @@ const DoctorProfileCard = () => {
         <div className="relative flex justify-between items-end -mt-12 mb-6">
           <div className="flex items-end gap-4">
             <div className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 flex items-center justify-center overflow-hidden shadow-md">
-              {/* Placeholder Avatar */}
-              <User size={48} className="text-gray-400" />
+              {user.avatarUrl ? (
+                 <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover"/>
+              ) : (
+                 <UserIcon size={48} className="text-gray-400" />
+              )}
             </div>
             <div className="mb-1">
-              <h3 className="text-xl font-bold text-gray-900">{doctorInfo.name}</h3>
-              <p className="text-sm text-red-600 font-medium">{doctorInfo.role}</p>
+              <h3 className="text-xl font-bold text-gray-900">{user.name}</h3>
+              <p className="text-sm text-red-600 font-medium">Specialist Doctor</p>
             </div>
           </div>
           
@@ -91,21 +109,24 @@ const DoctorProfileCard = () => {
           </div>
         </div>
 
-        {/* Bio */}
+        {/* Bio (Giả sử bạn sẽ thêm field bio vào User model, tạm thời fallback) */}
         <p className="text-sm text-gray-600 italic mb-6 border-l-4 border-red-200 pl-3">
-          "{doctorInfo.bio}"
+          "{ (user as any).bio || "Dedicated to saving lives through blood donation and patient care." }"
         </p>
 
-        {/* Details List */}
+        {/* Details List - Dùng dữ liệu thật */}
         <div className="space-y-2">
-          <InfoRow icon={ShieldCheck} label="Staff ID" value={doctorInfo.id} />
-          <InfoRow icon={Phone} label="Contact" value={doctorInfo.contact.phone} />
-          <InfoRow icon={Mail} label="Email" value={doctorInfo.contact.email} />
-          <InfoRow icon={MapPin} label="Office" value={doctorInfo.contact.location} />
+          <InfoRow icon={ShieldCheck} label="Staff ID" value={`DOC-${user.id}`} />
+          <InfoRow icon={Phone} label="Contact" value={(user as any).phone || "Update phone number"} />
+          <InfoRow icon={Mail} label="Email" value={user.username} /> {/* Giả sử username là email */}
+          <InfoRow icon={MapPin} label="Office" value={(user as any).address || "Bach Mai Hospital"} />
         </div>
 
-        {/* Action Button */}
-        <button className="mt-6 w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
+        {/* Action Button - Redirect to Profile */}
+        <button 
+          onClick={handleEditClick}
+          className="mt-6 w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+        >
           Edit Information
         </button>
       </div>
@@ -119,8 +140,8 @@ const ScheduleCalendar = () => {
       {/* Calendar Header */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-          <Clock className="text-red-600" /> 
-          Work Schedule
+        <Clock className="text-red-600" /> 
+        Work Schedule
         </h3>
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
           <button className="p-1 hover:bg-white rounded-md transition shadow-sm"><ChevronLeft size={18} className="text-gray-600" /></button>
@@ -201,8 +222,6 @@ const ScheduleCalendar = () => {
 const DoctorSchedule = () => {
   return (
     <section className="w-full max-w-[1400px] mx-auto px-4 py-8 md:py-12">
-      
-      {/* Title Section */}
       <div className="mb-8 text-center md:text-left">
         <h2 className="text-3xl font-bold text-gray-900">
           Information & Schedule
@@ -210,9 +229,7 @@ const DoctorSchedule = () => {
         <p className="text-gray-500 mt-2">View detailed information and shift schedule to book an appointment.</p>
       </div>
 
-      {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
         {/* Left Column: Profile (4/12) */}
         <div className="lg:col-span-5 xl:col-span-4">
           <DoctorProfileCard />
@@ -222,7 +239,6 @@ const DoctorSchedule = () => {
         <div className="lg:col-span-7 xl:col-span-8 h-full">
           <ScheduleCalendar />
         </div>
-
       </div>
     </section>
   );
