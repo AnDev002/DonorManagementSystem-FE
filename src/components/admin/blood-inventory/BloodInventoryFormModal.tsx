@@ -79,10 +79,14 @@ export default function BloodInventoryFormModal({
             setLoading(false);
             return;
         }
-        payload.sourceLocationId = Number(payload.sourceLocationId);
+        
+        // --- SỬA Ở ĐÂY: Lấy tên địa điểm từ ID và gán vào storageLocation ---
+        const selectedSite = siteOptions.find(s => s.id === Number(payload.sourceLocationId));
+        payload.storageLocation = selectedSite ? selectedSite.name : "Kho nhập khẩu";
+        
+        delete payload.sourceLocationId; // Xóa ID thừa vì backend cần string
       } else {
         payload.appointmentId = Number(payload.appointmentId);
-        // Nếu nhập từ appointment thì source location sẽ tự lấy từ appointment (logic backend xử lý)
         delete payload.sourceLocationId; 
       }
 

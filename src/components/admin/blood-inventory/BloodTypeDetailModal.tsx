@@ -160,11 +160,13 @@ export default function BloodTypeDetailModal({ isOpen, onClose, bloodType }: Blo
     setFormData({
       volume: unit.volume,
       rhType: unit.rhType,
-      collectionDate: unit.collectionDate, // Đảm bảo format YYYY-MM-DD từ API
+      collectionDate: unit.collectionDate,
       expiryDate: unit.expiryDate,
       storageLocation: unit.storageLocation || "",
-      appointmentId: 0 // Reset appointmentId để không gửi lên khi update
-    });
+      appointmentId: 0,
+      // --- THÊM DÒNG NÀY (Nhớ update cả default state của formData bên trên nếu cần) ---
+      status: unit.status || "Available" 
+    } as any); // cast any để tránh lỗi type tạm thời
     setView("form");
   };
 
@@ -402,6 +404,31 @@ export default function BloodTypeDetailModal({ isOpen, onClose, bloodType }: Blo
                   value={formData.storageLocation} 
                   onChange={(e) => handleChange("storageLocation", e.target.value)} 
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Storage Location</label>
+                  <Input 
+                    placeholder="E.g. Fridge A - Shelf 2"
+                    value={formData.storageLocation} 
+                    onChange={(e) => handleChange("storageLocation", e.target.value)} 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">Status</label>
+                  <select 
+                    className="w-full h-11 rounded-lg border border-gray-300 px-4 bg-white outline-none focus:border-red-500"
+                    value={(formData as any).status}
+                    onChange={(e) => handleChange("status", e.target.value)}
+                  >
+                    <option value="Available">Available</option>
+                    <option value="About to expire">About to expire</option>
+                    <option value="Expired">Expired</option>
+                    <option value="Used">Used</option>
+                  </select>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
