@@ -48,12 +48,15 @@ export default function CreateDonationPage() {
   const handleSubmit = async () => {
     setError(null);
     
-    // Validate cơ bản
+    // 1. Validate dữ liệu
     if (!formData.appointmentDate) {
       setError("Please select an appointment date.");
       return;
     }
-
+    if (!formData.location) { // <-- Thêm validate location
+        setError("Please select a donation location.");
+        return;
+    }
     if (!formData.phone) {
         setError("Please enter your phone number.");
         return;
@@ -66,28 +69,28 @@ export default function CreateDonationPage() {
     setIsSubmitting(true);
     
     try {
-      // 1. Chuẩn hóa dữ liệu trước khi gửi
-      // AppointmentDate cần convert sang ISO String để Backend NestJS (Prisma) hiểu
-      // Gán thời gian mặc định là 8:00 sáng cho ngày hẹn
+      // 2. Chuẩn hóa dữ liệu trước khi gửi
       const dateObj = new Date(formData.appointmentDate);
       dateObj.setHours(8, 0, 0, 0); 
       
       const payload = {
         ...formData,
-        appointmentDate: dateObj.toISOString(), // Gửi ISO string: "2025-04-30T08:00:00.000Z"
+        appointmentDate: dateObj.toISOString(), 
+        // --- SỬA LỖI TẠI ĐÂY ---
+        // Chuyển 'location' (đang chứa ID dạng string từ form) sang 'donationSiteId' (number)
+        donationSiteId: Number(formData.location), 
       };
 
-      await AppointmentService.createAppointment(payload);
-      
+      // Gọi API (Cast 'as any' để tránh lỗi TypeScript tạm thời nếu bạn chưa cập nhật interface)
+      await AppointmentService.createAppointment(payload as any);
 
-
-      // 2. Thông báo & Chuyển hướng
+      // 3. Thành công
       alert("Registration successful! Please wait for doctor confirmation.");
       router.push("/history");
 
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "An error occurred while creating the appointment. Please try again.");
+      setError(err.message || "An error occurred while creating the appointment.");
     } finally {
       setIsSubmitting(false);
     }
