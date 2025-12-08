@@ -48,14 +48,14 @@ export default function AppointmentDetailPage() {
   // 2. Xử lý Hủy lịch
   const handleCancel = async () => {
     if (!appointment) return;
-    const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy lịch hẹn này?");
+    const confirmCancel = window.confirm("Are you sure you want to cancel this appointment?");
     if (confirmCancel) {
       try {
         await AppointmentService.cancelAppointment(appointment.id);
-        alert("Đã hủy lịch hẹn thành công.");
+        alert("Appointment cancelled successfully.");
         fetchActiveAppointment();
       } catch (error) {
-        alert("Lỗi khi hủy lịch. Vui lòng thử lại.");
+        alert("Error cancelling appointment. Please try again.");
       }
     }
   };
@@ -129,7 +129,7 @@ export default function AppointmentDetailPage() {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
   const timeString = appointment.status === 'Confirmed'
-    ? new Date(appointment.appointmentDate).toLocaleTimeString("vi-VN", {hour: '2-digit', minute:'2-digit'})
+    ? new Date(appointment.appointmentDate).toLocaleTimeString("en-GB", {hour: '2-digit', minute:'2-digit'})
     : "Pending arrangement";
 
   // Helper render dòng chi tiết
@@ -152,7 +152,7 @@ export default function AppointmentDetailPage() {
       {/* 1. Header Section */}
       <div className="w-full max-w-6xl mx-auto pt-4">
         <AppointmentHeader
-          title="Theo dõi lịch hẹn"
+          title="Track Appointment"
           avatarIconData={avatarIconData}
         />
       </div>
@@ -192,7 +192,7 @@ export default function AppointmentDetailPage() {
                 {/* Cột 2 */}
                 <div className="flex flex-col gap-8">
                     <DetailItem label="Appointment Location" value={appointment.location} />
-                    <DetailItem label="Ccheduled Date" value={formattedDate} />
+                    <DetailItem label="Scheduled Date" value={formattedDate} />
                     <DetailItem label="Appointment Time" value={timeString} highlight={appointment.status === 'Confirmed'} />
                 </div>
             </div>

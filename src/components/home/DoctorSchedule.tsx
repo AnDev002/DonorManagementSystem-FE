@@ -1,6 +1,8 @@
+// src/components/home/DoctorSchedule.tsx
 "use client";
 
 import React from "react";
+// ... imports cũ giữ nguyên
 import { 
   User, 
   MapPin, 
@@ -104,7 +106,7 @@ const DoctorProfileCard = () => {
 
         {/* Action Button */}
         <button className="mt-6 w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
-          Chỉnh sửa thông tin
+          Edit Information
         </button>
       </div>
     </div>
@@ -122,14 +124,14 @@ const ScheduleCalendar = () => {
         </h3>
         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
           <button className="p-1 hover:bg-white rounded-md transition shadow-sm"><ChevronLeft size={18} className="text-gray-600" /></button>
-          <span className="text-sm font-semibold text-gray-700 px-2">Tháng 5, 2025</span>
+          <span className="text-sm font-semibold text-gray-700 px-2">May, 2025</span>
           <button className="p-1 hover:bg-white rounded-md transition shadow-sm"><ChevronRight size={18} className="text-gray-600" /></button>
         </div>
       </div>
 
       {/* Calendar Grid Header */}
       <div className="grid grid-cols-7 mb-2">
-        {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day, idx) => (
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => (
           <div key={idx} className="text-center text-xs font-bold text-gray-400 uppercase py-2">
             {day}
           </div>
@@ -171,7 +173,7 @@ const ScheduleCalendar = () => {
             {/* Hover Tooltip (Simple) */}
             {item.events.length > 0 && (
               <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20 pointer-events-none">
-                {item.events.length} ca trực
+                {item.events.length} shifts
               </div>
             )}
           </div>

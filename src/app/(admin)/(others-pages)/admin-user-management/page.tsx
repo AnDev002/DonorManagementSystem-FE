@@ -283,7 +283,7 @@ export default function UserManagementPage() {
     },
     { 
       header: "Created At", 
-      accessor: (item) => item.created_at ? new Date(item.created_at).toLocaleDateString('vi-VN') : "—" 
+      accessor: (item) => item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB') : "—" 
     },
   ];
 

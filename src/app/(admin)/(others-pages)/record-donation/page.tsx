@@ -66,7 +66,7 @@ export default function RecordDonationPage() {
 
       await AppointmentService.submitBloodRecord(payload);
       
-      alert(`✅ Đã lưu túi máu thành công cho ${selectedDonor.name}!`);
+      alert(`✅ Blood unit saved successfully for ${selectedDonor.name}!`);
       
       // Refresh danh sách
       setSelectedDonor(null);
@@ -74,7 +74,7 @@ export default function RecordDonationPage() {
 
     } catch (error) {
       console.error("Save failed", error);
-      alert("Lỗi khi lưu thông tin túi máu.");
+      alert("Error saving blood unit information.");
     } finally {
       setIsSubmitting(false);
     }
@@ -104,7 +104,7 @@ export default function RecordDonationPage() {
               ) : queue.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 text-gray-400">
                   <CheckCircle size={32} className="mb-2 opacity-20" />
-                  <p>Không còn người chờ lấy máu</p>
+                  <p>No donors waiting for collection</p>
                 </div>
               ) : (
                 queue.map((donor) => (
@@ -140,9 +140,9 @@ export default function RecordDonationPage() {
             {selectedDonor ? (
               <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-8 h-full overflow-y-auto">
                 <div className="mb-6 border-b border-gray-100 pb-4">
-                  <h2 className="text-xl font-bold text-gray-800">Thông tin túi máu thu được</h2>
+                  <h2 className="text-xl font-bold text-gray-800">Collected Blood Unit Information</h2>
                   <p className="text-sm text-gray-500">
-                    Người hiến: <span className="font-semibold text-black">{selectedDonor.name}</span>
+                    Donor: <span className="font-semibold text-black">{selectedDonor.name}</span>
                   </p>
                 </div>
 
@@ -169,7 +169,7 @@ export default function RecordDonationPage() {
             ) : (
               <div className="h-full flex flex-col items-center justify-center bg-white rounded-xl border border-dashed border-gray-300 text-gray-400">
                 <Droplet size={64} className="mb-4 opacity-20" />
-                <p className="text-lg font-medium">Chọn người hiến từ danh sách để nhập túi máu.</p>
+                <p className="text-lg font-medium">Select a donor from the list to record donation.</p>
               </div>
             )}
           </div>

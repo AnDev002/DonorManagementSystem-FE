@@ -1,5 +1,7 @@
+// src/components/header/NotificationDropdown.tsx
 "use client";
 import React, { useState, useEffect } from "react";
+// ... imports cũ giữ nguyên
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { NotificationService, Notification } from "@/services/NotificationService";
@@ -91,7 +93,7 @@ export default function NotificationDropdown() {
         <div className="flex flex-col max-h-[400px] overflow-y-auto custom-scrollbar">
           {notifications.length === 0 ? (
             <div className="p-6 text-center text-gray-500 text-sm">
-                Không có thông báo nào.
+                No notifications.
             </div>
           ) : (
             notifications.map((item) => (
@@ -115,7 +117,7 @@ export default function NotificationDropdown() {
                     </p>
                     <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                         <ClockIcon className="w-3 h-3" />
-                        {new Date(item.createdAt).toLocaleString('vi-VN')}
+                        {new Date(item.createdAt).toLocaleString('en-GB')}
                     </p>
                 </div>
                 {!item.isRead && (

@@ -51,7 +51,7 @@ export default function CustomerForm({ id }: CustomerFormProps) {
     e.preventDefault();
 
     if (!validatePhone(form.phone)) {
-        alert("Số điện thoại không đúng định dạng!");
+        alert("Invalid phone number format!");
         return;
     }
 

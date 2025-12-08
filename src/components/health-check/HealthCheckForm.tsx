@@ -1,3 +1,4 @@
+// src/components/health-check/HealthCheckForm.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -123,7 +124,7 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
             />
           </div>
 
-          {/* Blood Type */}
+          {/* Blood Type - Updated with all Rh types */}
           <div>
             <Label>Blood Type (Rapid Test)<span className="text-red-500">*</span></Label>
             <select
@@ -132,10 +133,22 @@ const HealthCheckForm: React.FC<HealthCheckFormProps> = ({
               onChange={(e) => handleChange("bloodType", e.target.value)}
             >
               <option value="">Select blood type</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="AB">AB</option>
-              <option value="O">O</option>
+              <optgroup label="Group A">
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+              </optgroup>
+              <optgroup label="Group B">
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+              </optgroup>
+              <optgroup label="Group AB">
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </optgroup>
+              <optgroup label="Group O">
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </optgroup>
             </select>
           </div>
 

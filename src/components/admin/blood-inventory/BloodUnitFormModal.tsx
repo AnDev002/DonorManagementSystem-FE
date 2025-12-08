@@ -1,3 +1,4 @@
+// src/components/admin/blood-inventory/BloodUnitFormModal.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -24,7 +25,7 @@ export default function BloodUnitFormModal({
     bloodType: "A",
     rhType: "+",
     volume: "250",
-    storageLocation: "Kho lạnh A1",
+    storageLocation: "Cold Storage A1",
     collectionDate: new Date().toISOString().split('T')[0], // Mặc định hôm nay
     expiryDate: "",
   });
@@ -47,7 +48,7 @@ export default function BloodUnitFormModal({
         bloodType: "A",
         rhType: "+",
         volume: "250",
-        storageLocation: "Kho lạnh A1",
+        storageLocation: "Cold Storage A1",
         collectionDate: new Date().toISOString().split('T')[0],
         expiryDate: "",
       });
@@ -70,16 +71,16 @@ export default function BloodUnitFormModal({
 
       if (initialData?.id) {
         await InventoryService.update(initialData.id, payload);
-        alert("Cập nhật thành công!");
+        alert("Update successful!");
       } else {
         await InventoryService.create(payload);
-        alert("Thêm mới thành công!");
+        alert("Added successfully!");
       }
       onSuccess();
       onClose();
     } catch (error: any) {
       console.error(error);
-      alert("Có lỗi xảy ra: " + (error.message || "Unknown error"));
+      alert("Error occurred: " + (error.message || "Unknown error"));
     } finally {
       setLoading(false);
     }
@@ -88,12 +89,12 @@ export default function BloodUnitFormModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} className="max-w-[600px] p-6">
       <h3 className="text-xl font-bold mb-6 text-gray-800">
-        {initialData ? "Cập nhật túi máu" : "Nhập kho túi máu mới"}
+        {initialData ? "Update Blood Unit" : "Import New Blood Unit"}
       </h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>Nhóm máu</Label>
+            <Label>Blood Type</Label>
             <select
               className="w-full h-11 rounded-lg border border-gray-300 px-3"
               value={formData.bloodType}
@@ -119,7 +120,7 @@ export default function BloodUnitFormModal({
         </div>
 
         <div>
-          <Label>Thể tích (ml)</Label>
+          <Label>Volume (ml)</Label>
           <Input
             type="number"
             value={formData.volume}
@@ -129,7 +130,7 @@ export default function BloodUnitFormModal({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>Ngày lấy máu</Label>
+            <Label>Collection Date</Label>
             <Input
               type="date"
               value={formData.collectionDate}
@@ -137,7 +138,7 @@ export default function BloodUnitFormModal({
             />
           </div>
           <div>
-            <Label>Ngày hết hạn</Label>
+            <Label>Expiry Date</Label>
             <Input
               type="date"
               value={formData.expiryDate}
@@ -147,18 +148,18 @@ export default function BloodUnitFormModal({
         </div>
 
         <div>
-          <Label>Vị trí lưu kho</Label>
+          <Label>Storage Location</Label>
           <Input
             value={formData.storageLocation}
             onChange={(e) => handleChange("storageLocation", e.target.value)}
-            placeholder="VD: Tủ lạnh số 2 - Ngăn 3"
+            placeholder="Ex: Fridge #2 - Shelf 3"
           />
         </div>
 
         <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={onClose} type="button">Hủy</Button>
+          <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
           <Button type="submit" disabled={loading}>
-            {loading ? "Đang lưu..." : "Lưu thông tin"}
+            {loading ? "Saving..." : "Save Info"}
           </Button>
         </div>
       </form>

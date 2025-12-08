@@ -1,3 +1,4 @@
+// src/app/(admin)/(others-pages)/history/[id]/page.tsx
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation"; // <-- IMPORT useParams
@@ -30,7 +31,6 @@ interface JourneyStepData {
 export default function HistoryDetailPage() {
   const router = useRouter();
   const params = useParams(); // <-- SỬ DỤNG HOOK useParams
-  // Ép kiểu id về string (vì useParams có thể trả về string | string[])
   const id = Array.isArray(params?.id) ? params?.id[0] : params?.id;
 
   // State lưu dữ liệu
@@ -53,14 +53,14 @@ export default function HistoryDetailPage() {
         const data = await AppointmentService.getAppointmentById(id);
 
         if (!data) {
-          setError("Không tìm thấy thông tin lịch hẹn.");
+          setError("Appointment information not found.");
           return;
         }
 
         // --- Xử lý dữ liệu hiển thị ---
         const dateObj = new Date(data.appointmentDate);
-        const dateString = dateObj.toLocaleDateString("vi-VN");
-        const timeString = dateObj.toLocaleTimeString("vi-VN", {
+        const dateString = dateObj.toLocaleDateString("en-GB");
+        const timeString = dateObj.toLocaleTimeString("en-GB", {
           hour: "2-digit",
           minute: "2-digit",
         });
@@ -103,7 +103,7 @@ export default function HistoryDetailPage() {
         // 2. Map hành trình (Giả lập các bước sau bước 1)
         const nextDay = new Date(dateObj);
         nextDay.setDate(dateObj.getDate() + 1);
-        const nextDayString = nextDay.toLocaleDateString("vi-VN");
+        const nextDayString = nextDay.toLocaleDateString("en-GB");
 
         setJourneySteps([
           {
@@ -131,7 +131,7 @@ export default function HistoryDetailPage() {
 
       } catch (err) {
         console.error(err);
-        setError("Lỗi kết nối hoặc không tải được dữ liệu.");
+        setError("Connection error or failed to load data.");
       } finally {
         setLoading(false); // Luôn tắt loading dù thành công hay thất bại
       }
@@ -159,7 +159,7 @@ export default function HistoryDetailPage() {
       <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-gray-50">
         <p className="text-red-500 font-semibold text-lg">{error}</p>
         <Button onClick={handleGoBack} size="sm" className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-100">
-          Quay lại
+          Back
         </Button>
       </div>
     );

@@ -32,8 +32,8 @@ const getIconByType = (type: string) => {
 };
 
 const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
-  // Format thời gian
-  const timeString = new Date(item.createdAt).toLocaleString('vi-VN', {
+  // Format thời gian sang en-GB
+  const timeString = new Date(item.createdAt).toLocaleString('en-GB', {
     hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'
   });
 
@@ -71,7 +71,7 @@ const NotificationItem = ({ item, onRead }: NotificationItemProps) => {
       {!item.isRead && (
         <div className="ml-auto flex-shrink-0 pl-2">
           <Badge variant="solid" color="primary" size="sm">
-            Mới
+            New
           </Badge>
         </div>
       )}

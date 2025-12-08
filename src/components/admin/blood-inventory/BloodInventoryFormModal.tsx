@@ -1,3 +1,4 @@
+// src/components/admin/blood-inventory/BloodInventoryFormModal.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -75,14 +76,14 @@ export default function BloodInventoryFormModal({
         
         // Nếu không có appointment (nhập tay), bắt buộc phải có sourceLocationId
         if (!payload.sourceLocationId) {
-            alert("Vui lòng chọn địa điểm nguồn (Source Location) khi nhập thủ công.");
+            alert("Please select a Source Location for manual import.");
             setLoading(false);
             return;
         }
         
         // --- SỬA Ở ĐÂY: Lấy tên địa điểm từ ID và gán vào storageLocation ---
         const selectedSite = siteOptions.find(s => s.id === Number(payload.sourceLocationId));
-        payload.storageLocation = selectedSite ? selectedSite.name : "Kho nhập khẩu";
+        payload.storageLocation = selectedSite ? selectedSite.name : "Import Warehouse";
         
         delete payload.sourceLocationId; // Xóa ID thừa vì backend cần string
       } else {

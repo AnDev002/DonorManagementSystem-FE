@@ -208,9 +208,9 @@ export default function AppointmentsPage() {
                         <td className="py-5 pl-4 font-bold text-red-600">{item.bloodType}</td>
                         <td className="py-5 text-gray-600">
                           {/* Format ngày tháng */}
-                          {new Date(item.appointmentDate).toLocaleDateString("vi-VN")}
+                          {new Date(item.appointmentDate).toLocaleDateString("en-GB")}
                           <div className="text-xs text-gray-400">
-                             {new Date(item.appointmentDate).toLocaleTimeString("vi-VN", {hour: '2-digit', minute:'2-digit'})}
+                             {new Date(item.appointmentDate).toLocaleTimeString("en-GB", {hour: '2-digit', minute:'2-digit'})}
                           </div>
                         </td>
                         <td className="py-5 flex justify-center">

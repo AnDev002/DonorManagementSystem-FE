@@ -77,9 +77,9 @@ const DonationHistoryTable: React.FC<Props> = ({ title, data, isLoading, onCance
                 <td className="p-4 text-sm font-medium text-gray-700">{item.donorName}</td>
                 <td className="p-4 text-sm text-gray-600">
                     {/* Format ngày giờ hiển thị */}
-                    {new Date(item.date).toLocaleDateString("vi-VN")} <br/>
+                    {new Date(item.date).toLocaleDateString("en-GB")} <br/>
                     <span className="text-xs text-gray-400">
-                        {new Date(item.date).toLocaleTimeString("vi-VN", {hour: '2-digit', minute:'2-digit'})}
+                        {new Date(item.date).toLocaleTimeString("en-GB", {hour: '2-digit', minute:'2-digit'})}
                     </span>
                 </td>
                 <td className="p-4 text-center">

@@ -76,8 +76,8 @@ export default function HealthCheckPage() {
       });
 
       alert(formData.isNormal 
-        ? "✅ Sức khỏe ĐẠT! Bệnh nhân đã được chuyển sang danh sách chờ lấy máu." 
-        : "⚠️ Sức khỏe KHÔNG ĐẠT. Đã từ chối hiến máu.");
+        ? "✅ Health Check PASSED! Patient has been moved to donation queue." 
+        : "⚠️ Health Check FAILED. Donation request rejected.");
       
       // Reset form và reload lại danh sách (bệnh nhân vừa khám sẽ biến mất)
       setSelectedPatient(null);
@@ -85,7 +85,7 @@ export default function HealthCheckPage() {
 
     } catch (error) {
       console.error(error);
-      alert("Có lỗi xảy ra khi lưu kết quả.");
+      alert("An error occurred while saving results.");
     } finally {
       setIsSubmitting(false);
     }
@@ -114,7 +114,7 @@ export default function HealthCheckPage() {
                 <p className="text-center text-gray-400 mt-10">Loading...</p>
               ) : patients.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-                  <p>Hết danh sách chờ</p>
+                  <p>Queue is empty</p>
                 </div>
               ) : (
                 patients.map((patient) => (
@@ -132,7 +132,7 @@ export default function HealthCheckPage() {
                       <div>
                         <h4 className="font-bold text-gray-900">{patient.name}</h4>
                         <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                          <User size={12} /> {calculateAge(patient.dob)} tuổi
+                          <User size={12} /> {calculateAge(patient.dob)} years old
                         </div>
                         <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                           <Phone size={12} /> {patient.phone}
@@ -165,7 +165,7 @@ export default function HealthCheckPage() {
             ) : (
               <div className="h-full flex flex-col items-center justify-center bg-white rounded-xl border border-dashed border-gray-300 text-gray-400">
                 <User size={64} className="mb-4 opacity-20" />
-                <p className="text-lg font-medium">Chọn một bệnh nhân từ danh sách chờ để bắt đầu khám.</p>
+                <p className="text-lg font-medium">Select a patient from the waiting list to start examination.</p>
               </div>
             )}
           </div>

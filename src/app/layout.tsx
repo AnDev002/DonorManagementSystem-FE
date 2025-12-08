@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Trang chủ Hiến máu",
-  description: "Quyền lợi của người hiến máu",
+  title: "Blood Donation Home",
+  description: "Benefits of blood donors",
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    <html lang="en"> 
       <body className={inter.className} suppressHydrationWarning={true}>
         <ClientProviders>
           {children}
