@@ -26,8 +26,14 @@ const getMonthRange = (date: Date) => {
   return { start, end };
 };
 
-// Helper format YYYY-MM-DD
-const formatDateStr = (date: Date) => date.toISOString().split('T')[0];
+// --- SỬA LỖI TIMEZONE ---
+// Thay vì dùng toISOString() (bị lệch múi giờ), ta lấy ngày/tháng/năm trực tiếp từ Local Time
+const formatDateStr = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -50,7 +56,7 @@ export default function WorkSchedule() {
     setLoading(true);
     try {
       const { start, end } = getMonthRange(currentMonth);
-      // Lấy dư ra vài ngày để chắc chắn cover múi giờ
+      // Lấy dư ra vài ngày để chắc chắn cover các trường hợp lệch biên
       const startStr = formatDateStr(new Date(start.setDate(start.getDate() - 1)));
       const endStr = formatDateStr(new Date(end.setDate(end.getDate() + 2)));
       
@@ -100,10 +106,16 @@ export default function WorkSchedule() {
 
   // 3. Lọc danh sách cho ngày đang chọn
   const appointmentsOnSelectedDate = useMemo(() => {
+    // selectedStr bây giờ là YYYY-MM-DD theo giờ địa phương
     const selectedStr = formatDateStr(selectedDate);
-    return appointments.filter(apt => 
-      apt.appointmentDate.startsWith(selectedStr)
-    );
+    
+    return appointments.filter(apt => {
+        // Cần đảm bảo apt.appointmentDate (ISO string từ DB) cũng được so sánh đúng
+        // Cách đơn giản nhất: So sánh chuỗi ngày YYYY-MM-DD
+        // Lưu ý: Backend thường trả về UTC (VD: 2025-12-09T00:00:00Z).
+        // Nếu bạn muốn hiển thị đúng ngày user đã chọn lúc đăng ký, ta chỉ cần cắt chuỗi ISO 10 ký tự đầu.
+        return apt.appointmentDate.substring(0, 10) === selectedStr;
+    });
   }, [selectedDate, appointments]);
 
   // Handler chuyển tháng
@@ -113,12 +125,15 @@ export default function WorkSchedule() {
   // Handler mở Modal set giờ
   const handleOpenSetTime = (apt: Appointment) => {
     setEditingApt(apt);
-    // Lấy giờ hiện tại nếu có
     const dateObj = new Date(apt.appointmentDate);
     const hours = dateObj.getHours().toString().padStart(2, '0');
     const minutes = dateObj.getMinutes().toString().padStart(2, '0');
-    // Nếu status là Pending (chưa set giờ chuẩn), default là 08:00, ngược lại lấy giờ thật
-    setTimeSlot(apt.status === 'Pending' ? "08:00" : `${hours}:${minutes}`);
+    
+    // Nếu status là Pending, chưa có giờ -> default 08:00
+    // Nếu đã Confirmed/ReadyToDonate -> lấy giờ hiện tại của appointment
+    const hasTimeSet = ['Confirmed', 'Completed', 'ReadyToDonate'].includes(apt.status);
+    setTimeSlot(hasTimeSet ? `${hours}:${minutes}` : "08:00");
+    
     setIsModalOpen(true);
   };
 
@@ -127,12 +142,12 @@ export default function WorkSchedule() {
     if (!editingApt || !timeSlot) return;
     try {
       await AppointmentService.updateTimeSlot(editingApt.id, timeSlot);
-      alert("Đã cập nhật giờ hẹn và xác nhận!");
+      alert("Time updated successfully!");
       setIsModalOpen(false);
       fetchAppointments(); // Reload data
     } catch (error) {
       console.error(error);
-      alert("Lỗi khi cập nhật giờ");
+      alert("Failed to update time");
     }
   };
 
@@ -147,6 +162,7 @@ export default function WorkSchedule() {
             <ChevronLeftIcon className="w-6 h-6 text-white" />
           </button>
           <span className="text-xl font-bold min-w-[150px] text-center">
+            {/* SỬA NGÔN NGỮ: en-US */}
             {currentMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
           </span>
           <button onClick={handleNextMonth} className="p-2 hover:bg-white/20 rounded-full transition">
@@ -172,7 +188,9 @@ export default function WorkSchedule() {
               if (!cell.isCurrentMonth) return <div key={idx} className="h-24 md:h-32"></div>;
 
               const dateStr = cell.fullDate ? formatDateStr(cell.fullDate) : "";
-              const dayApts = appointments.filter(a => a.appointmentDate.startsWith(dateStr));
+              // Logic đếm số lượng cuộc hẹn trong ngày
+              const dayApts = appointments.filter(a => a.appointmentDate.substring(0, 10) === dateStr);
+              
               const isSelected = selectedDate.getDate() === cell.date && selectedDate.getMonth() === currentMonth.getMonth();
               const isToday = new Date().toDateString() === cell.fullDate?.toDateString();
 
@@ -211,8 +229,10 @@ export default function WorkSchedule() {
         <div className="w-full lg:w-1/3 flex flex-col gap-4">
           <div className="bg-[#CF2222]/10 p-6 rounded-2xl border border-[#CF2222]/20 min-h-[400px]">
             <h3 className="text-xl font-bold text-gray-800 mb-2">Appointments</h3>
+            
+            {/* SỬA NGÔN NGỮ HIỂN THỊ NGÀY ĐANG CHỌN: en-GB */}
             <p className="text-[#CF2222] font-semibold text-lg mb-6 border-b border-red-200 pb-4">
-              {selectedDate.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              {selectedDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
 
             <div className="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
@@ -221,10 +241,12 @@ export default function WorkSchedule() {
               ) : (
                 appointmentsOnSelectedDate.map(apt => {
                   const aptTime = new Date(apt.appointmentDate);
-                  // --- CẬP NHẬT LOGIC TẠI ĐÂY ---
-                  // Coi Confirmed, Completed VÀ ReadyToDonate là đã có giờ
+                  
+                  // Các trạng thái được coi là "Đã có giờ" để hiển thị
                   const hasTimeSet = ['Confirmed', 'Completed', 'ReadyToDonate'].includes(apt.status);
-                  const timeString = aptTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                  
+                  // Format giờ hiển thị (HH:mm)
+                  const timeString = aptTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
                   return (
                     <div key={apt.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2">
@@ -236,7 +258,7 @@ export default function WorkSchedule() {
                         <div className={clsx(
                           "px-2 py-1 rounded text-xs font-bold",
                           apt.status === 'Confirmed' ? "bg-green-100 text-green-700" :
-                          apt.status === 'ReadyToDonate' ? "bg-blue-100 text-blue-700" : // Thêm màu cho ReadyToDonate
+                          apt.status === 'ReadyToDonate' ? "bg-blue-100 text-blue-700" : // Màu xanh cho trạng thái Ready
                           apt.status === 'Pending' ? "bg-yellow-100 text-yellow-700" :
                           "bg-gray-100 text-gray-600"
                         )}>
