@@ -22,9 +22,10 @@ interface Appointment {
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// --- HELPER: CHUYỂN ĐỔI NGÀY VỀ LOCAL STRING (YYYY-MM-DD) ---
-// Hàm này quan trọng để so sánh chính xác ngày bất chấp múi giờ
-const formatDateLocal = (dateInput: Date | string) => {
+// --- HELPER: CHUẨN HÓA NGÀY ---
+// Hàm này cực kỳ quan trọng: Nó lấy ngày, tháng, năm theo giờ địa phương của máy tính người dùng
+// Trả về chuỗi dạng "YYYY-MM-DD" để làm khóa so sánh duy nhất
+const getLocalDateKey = (dateInput: Date | string): string => {
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -33,41 +34,40 @@ const formatDateLocal = (dateInput: Date | string) => {
 };
 
 export default function WorkSchedule() {
-  // State quản lý thời gian
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // State: Quản lý tháng đang xem
+  const [currentMonthDate, setCurrentMonthDate] = useState(new Date());
   
-  // State dữ liệu
+  // State: Quản lý ngày đang chọn (Lưu dưới dạng chuỗi KEY để tránh lỗi object)
+  const [selectedDateKey, setSelectedDateKey] = useState<string>(getLocalDateKey(new Date()));
+  
+  // State: Dữ liệu
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // State Modal
+  // State: Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingApt, setEditingApt] = useState<Appointment | null>(null);
   const [timeSlot, setTimeSlot] = useState("");
 
-  // 1. Fetch dữ liệu khi đổi tháng
+  // 1. Fetch dữ liệu mỗi khi đổi tháng
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      // Tính ngày đầu và cuối của view lịch
-      const year = currentMonth.getFullYear();
-      const month = currentMonth.getMonth();
+      // Lấy ngày đầu tháng và cuối tháng
+      const year = currentMonthDate.getFullYear();
+      const month = currentMonthDate.getMonth();
       
-      // Lấy dư ra 7 ngày trước và sau để cover hết các ô đệm của tháng
+      // Mở rộng range thêm 7 ngày trước và sau để cover hết các ô lịch bị mờ
       const startRange = new Date(year, month, 1);
       startRange.setDate(startRange.getDate() - 7);
       
       const endRange = new Date(year, month + 1, 0);
       endRange.setDate(endRange.getDate() + 7);
 
-      // Convert sang string YYYY-MM-DD theo Local Time để gửi API
-      // Không dùng toISOString() để tránh bị lùi ngày do timezone
-      const startStr = formatDateLocal(startRange);
-      const endStr = formatDateLocal(endRange);
+      // Gọi API với chuỗi YYYY-MM-DD chuẩn
+      const startStr = getLocalDateKey(startRange);
+      const endStr = getLocalDateKey(endRange);
       
-      console.log(`Fetching from ${startStr} to ${endStr}`); // Debug log
-
       const data = await AppointmentService.getAppointmentsByRange(startStr, endStr);
       if (Array.isArray(data)) {
         setAppointments(data);
@@ -81,28 +81,27 @@ export default function WorkSchedule() {
 
   useEffect(() => {
     fetchAppointments();
-  }, [currentMonth]);
+  }, [currentMonthDate]);
 
-  // 2. Logic Lịch (Grid Generation)
+  // 2. Tạo Grid Lịch (Danh sách các ô ngày)
   const calendarGrid = useMemo(() => {
-    const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+    const year = currentMonthDate.getFullYear();
+    const month = currentMonthDate.getMonth();
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
     
-    const daysInMonth = lastDay.getDate();
-    const startDayOfWeek = firstDay.getDay(); // 0 (Sun) -> 6 (Sat)
+    const daysInMonth = lastDayOfMonth.getDate();
+    const startDayOfWeek = firstDayOfMonth.getDay(); // 0 (Sun) -> 6 (Sat)
 
-    const grid: { date: number; isCurrentMonth: boolean; fullDate: Date; dateStr: string }[] = [];
+    const grid = [];
 
-    // Padding ngày tháng trước
+    // Padding ngày tháng trước (Làm mờ)
     for (let i = 0; i < startDayOfWeek; i++) {
         const prevDate = new Date(year, month, 0 - (startDayOfWeek - 1 - i));
         grid.push({ 
-            date: prevDate.getDate(), 
-            isCurrentMonth: false, 
-            fullDate: prevDate,
-            dateStr: formatDateLocal(prevDate) 
+            dayNum: prevDate.getDate(), 
+            dateKey: getLocalDateKey(prevDate), // Key chuẩn: YYYY-MM-DD
+            isCurrentMonth: false 
         });
     }
 
@@ -110,71 +109,74 @@ export default function WorkSchedule() {
     for (let i = 1; i <= daysInMonth; i++) {
       const curDate = new Date(year, month, i);
       grid.push({ 
-        date: i, 
-        isCurrentMonth: true, 
-        fullDate: curDate,
-        dateStr: formatDateLocal(curDate)
+        dayNum: i, 
+        dateKey: getLocalDateKey(curDate), 
+        isCurrentMonth: true 
       });
     }
     
     // Padding ngày tháng sau
-    const remainingCells = 42 - grid.length;
+    const remainingCells = 42 - grid.length; // Đảm bảo lưới luôn đẹp (6 dòng)
     for(let i = 1; i <= remainingCells; i++) {
         const nextDate = new Date(year, month + 1, i);
         grid.push({ 
-            date: nextDate.getDate(), 
-            isCurrentMonth: false, 
-            fullDate: nextDate,
-            dateStr: formatDateLocal(nextDate)
+            dayNum: nextDate.getDate(), 
+            dateKey: getLocalDateKey(nextDate),
+            isCurrentMonth: false
         });
     }
 
     return grid;
-  }, [currentMonth]);
+  }, [currentMonthDate]);
 
-  // 3. Lọc danh sách cho ngày đang chọn
+  // 3. Lọc danh sách Appointment theo ngày đang chọn
   const appointmentsOnSelectedDate = useMemo(() => {
-    // Chuyển ngày đang chọn (SelectedDate) thành chuỗi YYYY-MM-DD
-    const selectedDateStr = formatDateLocal(selectedDate);
-    
     return appointments.filter(apt => {
-        // Chuyển ngày của Appointment (ISO) thành chuỗi YYYY-MM-DD (Local)
-        const aptDateStr = formatDateLocal(apt.appointmentDate);
-        return aptDateStr === selectedDateStr;
+        // Chuyển đổi ngày từ API (ISO) sang Key địa phương để so sánh
+        const aptDateKey = getLocalDateKey(apt.appointmentDate);
+        return aptDateKey === selectedDateKey;
     });
-  }, [selectedDate, appointments]);
+  }, [selectedDateKey, appointments]);
 
-  // Handler chuyển tháng
-  const handlePrevMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  const handleNextMonth = () => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  // --- HANDLERS ---
 
-  // Handler mở Modal set giờ
+  const handlePrevMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1));
+  const handleNextMonth = () => setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1));
+
   const handleOpenSetTime = (apt: Appointment) => {
     setEditingApt(apt);
     const dateObj = new Date(apt.appointmentDate);
+    // Lấy giờ phút hiện tại trong object date
     const hours = dateObj.getHours().toString().padStart(2, '0');
     const minutes = dateObj.getMinutes().toString().padStart(2, '0');
     
-    // Nếu giờ là 00:00 -> Coi như chưa set -> Gợi ý 08:00
+    // Nếu giờ là 00:00 (mặc định của backend) -> Xem như chưa set -> Gợi ý 08:00
+    // Nếu đã có giờ khác 00:00 -> Hiển thị giờ đó
     const isDefaultTime = hours === '00' && minutes === '00';
     setTimeSlot(isDefaultTime ? "08:00" : `${hours}:${minutes}`);
     
     setIsModalOpen(true);
   };
 
-  // Handler Lưu giờ
   const handleSaveTime = async () => {
     if (!editingApt || !timeSlot) return;
     try {
       await AppointmentService.updateTimeSlot(editingApt.id, timeSlot);
       alert("Time updated successfully!");
       setIsModalOpen(false);
-      fetchAppointments(); // Reload data
+      fetchAppointments(); // Reload lại để cập nhật trạng thái mới
     } catch (error) {
       console.error(error);
       alert("Failed to update time");
     }
   };
+
+  // Format ngày hiển thị tiêu đề (VD: Friday, 20 May 2025)
+  const displaySelectedDate = useMemo(() => {
+    const [y, m, d] = selectedDateKey.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }, [selectedDateKey]);
 
   return (
     <div className="flex flex-col w-full max-w-[1460px] mx-auto p-4 md:p-8 gap-8 min-h-screen bg-white">
@@ -187,7 +189,7 @@ export default function WorkSchedule() {
             <ChevronLeftIcon className="w-6 h-6 text-white" />
           </button>
           <span className="text-xl font-bold min-w-[180px] text-center capitalize">
-            {currentMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+            {currentMonthDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
           </span>
           <button onClick={handleNextMonth} className="p-2 hover:bg-white/20 rounded-full transition">
             <ChevronRightIcon className="w-6 h-6 text-white" />
@@ -199,52 +201,56 @@ export default function WorkSchedule() {
         
         {/* LEFT: CALENDAR GRID */}
         <div className="w-full lg:w-2/3 bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+          {/* Weekdays Header */}
           <div className="grid grid-cols-7 mb-4 border-b border-gray-100 pb-2">
             {WEEKDAYS.map(day => (
               <div key={day} className="text-center font-bold text-gray-400 text-sm uppercase">{day}</div>
             ))}
           </div>
 
+          {/* Days Grid */}
           <div className="grid grid-cols-7 gap-2">
             {calendarGrid.map((cell, idx) => {
-              // Lọc các appointment trùng ngày với ô lịch (dùng chuỗi YYYY-MM-DD so sánh)
-              const dayApts = appointments.filter(a => formatDateLocal(a.appointmentDate) === cell.dateStr);
-              const pendingCount = dayApts.filter(a => a.status === 'Pending').length;
+              // Tìm các lịch hẹn trùng với ngày của ô này (dựa vào Key YYYY-MM-DD)
+              const cellApts = appointments.filter(a => getLocalDateKey(a.appointmentDate) === cell.dateKey);
+              const pendingCount = cellApts.filter(a => a.status === 'Pending').length;
+              const confirmedCount = cellApts.filter(a => ['Confirmed', 'ReadyToDonate', 'Completed'].includes(a.status)).length;
               
-              const isSelected = formatDateLocal(selectedDate) === cell.dateStr;
-              const isToday = formatDateLocal(new Date()) === cell.dateStr;
+              const isSelected = selectedDateKey === cell.dateKey;
+              const isToday = getLocalDateKey(new Date()) === cell.dateKey;
 
               return (
                 <div 
                   key={idx}
-                  onClick={() => setSelectedDate(cell.fullDate)}
+                  onClick={() => setSelectedDateKey(cell.dateKey)}
                   className={clsx(
                     "h-24 md:h-32 border rounded-xl p-2 cursor-pointer transition-all relative flex flex-col justify-between hover:shadow-md",
                     isSelected ? "border-[#CF2222] bg-red-50" : "border-gray-100 bg-white",
-                    !cell.isCurrentMonth && "bg-gray-50/50 opacity-60",
-                    isToday && !isSelected && "border-blue-300 bg-blue-50"
+                    !cell.isCurrentMonth && "bg-gray-50/50 opacity-50 grayscale", // Làm mờ ngày tháng khác
+                    isToday && !isSelected && "border-blue-300 bg-blue-50 ring-1 ring-blue-200"
                   )}
                 >
-                  <span className={clsx(
-                    "font-bold text-sm",
-                    isSelected ? "text-[#CF2222]" : "text-gray-700"
-                  )}>
-                    {cell.date}
-                  </span>
+                  <div className="flex justify-between items-start">
+                    <span className={clsx(
+                        "font-bold text-sm",
+                        isSelected ? "text-[#CF2222]" : "text-gray-700"
+                    )}>
+                        {cell.dayNum}
+                    </span>
+                    {isToday && <span className="text-[10px] font-bold text-blue-500 uppercase">Today</span>}
+                  </div>
 
+                  {/* Indicators (Chấm trạng thái) */}
                   <div className="flex flex-col gap-1 w-full">
-                    {dayApts.length > 0 && (
-                      <div className="flex items-center gap-1">
-                         {pendingCount > 0 ? (
-                            <span className="w-full text-[10px] font-bold text-center bg-yellow-100 text-yellow-700 rounded px-1 py-0.5 border border-yellow-200">
-                                {pendingCount} Pending
-                            </span>
-                         ) : (
-                            <span className="w-full text-[10px] font-bold text-center bg-green-100 text-green-700 rounded px-1 py-0.5">
-                                {dayApts.length} Set
-                            </span>
-                         )}
-                      </div>
+                    {pendingCount > 0 && (
+                        <div className="w-full text-[10px] font-bold text-center bg-yellow-100 text-yellow-700 rounded px-1 py-0.5 border border-yellow-200 truncate">
+                            {pendingCount} Pending
+                        </div>
+                    )}
+                    {confirmedCount > 0 && (
+                        <div className="w-full text-[10px] font-bold text-center bg-green-100 text-green-700 rounded px-1 py-0.5 border border-green-200 truncate">
+                            {confirmedCount} Set
+                        </div>
                     )}
                   </div>
                 </div>
@@ -256,56 +262,62 @@ export default function WorkSchedule() {
         {/* RIGHT: APPOINTMENT LIST FOR SELECTED DATE */}
         <div className="w-full lg:w-1/3 flex flex-col gap-4">
           <div className="bg-[#CF2222]/5 p-6 rounded-2xl border border-[#CF2222]/10 min-h-[400px]">
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Appointments</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Appointments List</h3>
             
             <p className="text-[#CF2222] font-semibold text-lg mb-6 border-b border-red-200 pb-4">
-              {selectedDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              {displaySelectedDate}
             </p>
 
             <div className="flex flex-col gap-4 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
               {appointmentsOnSelectedDate.length === 0 ? (
                 <div className="flex flex-col items-center justify-center mt-10 text-gray-400">
-                    <p className="italic">No appointments for this day.</p>
+                    <div className="bg-gray-100 p-4 rounded-full mb-3">
+                        <ClockIcon className="w-8 h-8 text-gray-300" />
+                    </div>
+                    <p className="italic">No appointments found for this day.</p>
                 </div>
               ) : (
                 appointmentsOnSelectedDate.map(apt => {
                   const aptTime = new Date(apt.appointmentDate);
                   const hours = aptTime.getHours();
                   const minutes = aptTime.getMinutes();
-                  // Check if time is 00:00 (default)
+                  // Kiểm tra xem đã có giờ cụ thể chưa (nếu 00:00 là chưa set)
                   const isTimeSet = !(hours === 0 && minutes === 0);
                   
+                  // Format giờ hiển thị (HH:mm)
                   const timeString = aptTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
                   return (
                     <div key={apt.id} className={clsx(
-                        "p-4 rounded-xl shadow-sm border flex flex-col gap-2 transition-all",
-                        apt.status === 'Pending' ? "bg-yellow-50 border-yellow-200" : "bg-white border-gray-100"
+                        "p-4 rounded-xl shadow-sm border flex flex-col gap-2 transition-all group",
+                        apt.status === 'Pending' ? "bg-yellow-50 border-yellow-200 hover:border-yellow-300" : "bg-white border-gray-100 hover:border-red-200"
                     )}>
                       <div className="flex justify-between items-start">
                         <div>
-                          <div className="font-bold text-gray-900">{apt.name || apt.user?.name || "Unknown Donor"}</div>
-                          <div className="text-xs text-gray-500 mt-0.5">{apt.phone || "No phone number"}</div>
+                          <div className="font-bold text-gray-900 text-lg">{apt.name || apt.user?.name || "Unknown"}</div>
+                          <div className="text-sm text-gray-500 mt-0.5">{apt.phone || "No phone number"}</div>
                         </div>
                         <div className={clsx(
-                          "px-2 py-1 rounded text-xs font-bold uppercase",
+                          "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider",
                           apt.status === 'Confirmed' ? "bg-green-100 text-green-700" :
                           apt.status === 'ReadyToDonate' ? "bg-blue-100 text-blue-700" :
-                          apt.status === 'Pending' ? "bg-red-100 text-red-700 animate-pulse" :
+                          apt.status === 'Pending' ? "bg-yellow-100 text-yellow-700" :
                           "bg-gray-100 text-gray-600"
                         )}>
-                          {apt.status}
+                          {apt.status === 'ReadyToDonate' ? 'Screening Passed' : apt.status}
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-black/5">
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-black/5">
                         {isTimeSet ? (
                           <div className="flex items-center gap-2 text-gray-700 font-bold bg-white px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm">
                             <ClockIcon className="w-4 h-4 text-[#CF2222]" />
                             {timeString}
                           </div>
                         ) : (
-                          <span className="text-sm text-red-500 font-medium italic">Time not set</span>
+                          <span className="text-sm text-red-500 font-medium italic flex items-center gap-1">
+                            <ClockIcon className="w-4 h-4" /> Time not set
+                          </span>
                         )}
 
                         <button 
@@ -327,28 +339,33 @@ export default function WorkSchedule() {
       {/* MODAL SET TIME */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} className="max-w-[400px] p-6">
         <div className="flex flex-col gap-4">
-          <h3 className="text-xl font-bold text-gray-800">Set Appointment Time</h3>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-gray-800">Set Appointment Time</h3>
+            <p className="text-sm text-gray-500">Please choose a time slot for the donor.</p>
+          </div>
+          
           {editingApt && (
-            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                <p className="text-sm text-gray-500">Donor</p>
-                <p className="font-bold text-gray-900">{editingApt.name || editingApt.user?.name}</p>
+            <div className="bg-red-50 p-4 rounded-xl border border-red-100 text-center">
+                <p className="text-xs font-bold text-red-400 uppercase tracking-wide mb-1">Donor Name</p>
+                <p className="font-bold text-gray-900 text-lg">{editingApt.name || editingApt.user?.name}</p>
             </div>
           )}
           
           <div className="mt-2">
-            <Label>Select Time Slot</Label>
+            <Label>Time Slot</Label>
             <Input 
               type="time" 
               value={timeSlot} 
               onChange={(e) => setTimeSlot(e.target.value)}
-              className="text-lg font-medium h-14" 
+              className="text-2xl font-bold text-center h-16 tracking-widest text-[#CF2222]" 
             />
-            <p className="text-xs text-gray-500 mt-3 leading-relaxed">
-              *Setting a time will automatically change status from <strong>Pending</strong> to <strong>Confirmed</strong> and notify the donor.
-            </p>
+            <div className="mt-4 p-3 bg-blue-50 text-blue-700 text-xs rounded-lg flex gap-2 items-start">
+               <span className="mt-0.5">ℹ️</span>
+               <p>Setting a time will automatically confirm this appointment and notify the donor.</p>
+            </div>
           </div>
 
-          <div className="flex justify-end gap-3 mt-4">
+          <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
             <Button variant="outline" size="sm" onClick={() => setIsModalOpen(false)}>Cancel</Button>
             <Button size="sm" onClick={handleSaveTime} className="bg-[#CF2222] hover:bg-red-700 text-white shadow-lg">Confirm & Save</Button>
           </div>
